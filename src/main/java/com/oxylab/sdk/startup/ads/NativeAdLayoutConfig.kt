@@ -30,33 +30,35 @@ package com.oxylab.sdk.startup.ads
  * )
  * ```
  */
+import com.oxylab.sdk.startup.R
+
 data class NativeAdLayoutConfig(
     // Native ad layout resource IDs
-    val nativeLayout01: Int,
-    val nativeLayout02: Int,
-    val nativeLayout03: Int,
-    val nativeLayout04: Int,
-    val nativeLayoutFull: Int,
+    val nativeLayout01: Int = R.layout.native_ad_layout_01,
+    val nativeLayout02: Int = R.layout.native_ad_layout_02,
+    val nativeLayout03: Int = R.layout.native_ad_layout_03,
+    val nativeLayout04: Int = R.layout.native_ad_layout_04,
+    val nativeLayoutFull: Int = R.layout.native_ad_layout_full,
 
     // Shimmer layout resource IDs
-    val shimmer01: Int,
-    val shimmer02: Int,
-    val shimmer03: Int,
-    val shimmer04: Int,
+    val shimmer01: Int = R.layout.shimmer_native_ad_01,
+    val shimmer02: Int = R.layout.shimmer_native_ad_02,
+    val shimmer03: Int = R.layout.shimmer_native_ad_03,
+    val shimmer04: Int = R.layout.shimmer_native_ad_04,
 
     // Shimmer container view ID
-    val shimmerContainerId: Int,
+    val shimmerContainerId: Int = R.id.shimmer_view_container,
 
     // Standard native ad view IDs (used inside all layout variants)
-    val headlineId: Int,
-    val mediaViewId: Int,
-    val bodyId: Int,
-    val callToActionId: Int,
-    val iconId: Int,
-    val adChoicesId: Int,
+    val headlineId: Int = R.id.native_ad_headline,
+    val mediaViewId: Int = R.id.native_ad_media_view,
+    val bodyId: Int = R.id.native_ad_body,
+    val callToActionId: Int = R.id.native_ad_call_to_action,
+    val iconId: Int = R.id.native_ad_icon,
+    val adChoicesId: Int = R.id.native_ad_choice_view,
 
     // Extended view IDs (used only in Full layout)
-    val advertiserId: Int = 0,
-    val storeId: Int = 0,
-    val priceId: Int = 0,
+    val advertiserId: Int = R.id.native_ad_advertiser,
+    val storeId: Int = R.id.native_ad_store,
+    val priceId: Int = R.id.native_ad_price,
 )

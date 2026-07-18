@@ -11,7 +11,10 @@ import com.oxylab.sdk.startup.ads.StarterAdsManager
  */
 object OxylabKit {
     
-    internal lateinit var config: OxylabConfig
+    lateinit var config: OxylabConfig
+        private set
+        
+    lateinit var adsManager: StarterAdsManager
         private set
         
     private var isInitialized = false
@@ -26,7 +29,8 @@ object OxylabKit {
         if (isInitialized) return
         
         config = sdkConfig
-        StarterAdsManager.initialize(context)
+        adsManager = StarterAdsManager(config)
+        adsManager.initialize(context)
         isInitialized = true
     }
 }

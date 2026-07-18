@@ -285,7 +285,7 @@ abstract class OxylabBaseSplashActivity : AppCompatActivity() {
         override fun isNativeEnabled() = OxylabKit.config.isNativeEnabled()
         override fun isBannerEnabled() = OxylabKit.config.isBannerEnabled()
         override fun isAdEnabled(adVarName: String) = true
-        override fun getInterstitialInterval() = OxylabKit.config.getInterstitialIntervalMs()
+        override fun getInterstitialInterval() = OxylabKit.config.getInterstitialInterval()
     }
 
     private inner class InternalAdTiming : AdTimingProvider {

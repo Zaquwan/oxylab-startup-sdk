@@ -76,7 +76,13 @@ abstract class OxylabBaseLanguageActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(getLayoutResId())
 
-        nativeAdHelper = StarterNativeAdHelper(this)
+        nativeAdHelper = StarterNativeAdHelper(
+            this,
+            com.oxylab.sdk.startup.core.OxylabKit.config,
+            com.oxylab.sdk.startup.core.OxylabKit.adsManager,
+            com.oxylab.sdk.startup.utils.StarterNetworkMonitor(this),
+            com.oxylab.sdk.startup.ads.NativeAdLayoutConfig()
+        )
         
         // Load initial selected code from preferences
         val prefs = getSharedPreferences("oxylab_lang", Context.MODE_PRIVATE)

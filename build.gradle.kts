@@ -62,8 +62,8 @@ afterEvaluate {
         publications {
             create<MavenPublication>("release") {
                 from(components["release"])
-                groupId = "com.oxylab"
-                artifactId = "startup-sdk"
+                groupId = "com.github.Zaquwan"
+                artifactId = "oxylab-startup-sdk"
                 version = "1.0.0"
             }
         }

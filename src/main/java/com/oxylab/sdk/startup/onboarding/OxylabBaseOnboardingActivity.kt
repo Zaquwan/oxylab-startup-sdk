@@ -83,8 +83,21 @@ abstract class OxylabBaseOnboardingActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(getLayoutResId())
 
-        nativeAdHelper = StarterNativeAdHelper(this)
-        interstitialAdHelper = StarterInterstitialAdHelper(this)
+        nativeAdHelper = StarterNativeAdHelper(
+            this,
+            com.oxylab.sdk.startup.core.OxylabKit.config,
+            com.oxylab.sdk.startup.core.OxylabKit.adsManager,
+            com.oxylab.sdk.startup.utils.StarterNetworkMonitor(this),
+            com.oxylab.sdk.startup.ads.NativeAdLayoutConfig()
+        )
+        interstitialAdHelper = StarterInterstitialAdHelper(
+            this,
+            com.oxylab.sdk.startup.core.OxylabKit.config,
+            com.oxylab.sdk.startup.ads.DefaultAdTimingProvider(),
+            com.oxylab.sdk.startup.core.OxylabKit.adsManager,
+            android.R.style.Theme_DeviceDefault_Light_Dialog_NoActionBar,
+            com.oxylab.sdk.startup.R.layout.dialog_loading_ad
+        )
         interstitialAdHelper.loadAd(getInterstitialAdUnitId(), "ONBOARDING_EXIT")
 
         val onboardingViewPager = findViewById<ViewPager2>(getViewPagerId())

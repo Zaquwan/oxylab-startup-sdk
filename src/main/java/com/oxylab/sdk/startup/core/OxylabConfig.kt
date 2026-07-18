@@ -1,20 +1,14 @@
 package com.oxylab.sdk.startup.core
 
+import com.oxylab.sdk.startup.ads.AdConfigProvider
+
 /**
  * Global configuration for the Oxylab SDK.
  * 
  * Implement this interface to provide dynamic values from your Remote Config provider,
  * or use [DefaultOxylabConfig] if you prefer static values.
  */
-interface OxylabConfig {
-    fun isGlobalAdsEnabled(): Boolean
-    fun isInterstitialEnabled(): Boolean
-    fun isNativeEnabled(): Boolean
-    fun isBannerEnabled(): Boolean
-    
-    /** Minimum time in milliseconds that must pass between showing interstitial ads. */
-    fun getInterstitialIntervalMs(): Long
-}
+interface OxylabConfig : AdConfigProvider
 
 /**
  * A default static implementation of [OxylabConfig].
@@ -30,5 +24,6 @@ open class DefaultOxylabConfig(
     override fun isInterstitialEnabled() = interstitialAds
     override fun isNativeEnabled() = nativeAds
     override fun isBannerEnabled() = bannerAds
-    override fun getInterstitialIntervalMs() = intervalMs
+    override fun getInterstitialInterval() = intervalMs
+    override fun isAdEnabled(adVarName: String) = true
 }
