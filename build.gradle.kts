@@ -64,7 +64,7 @@ afterEvaluate {
                 from(components["release"])
                 groupId = "com.github.Zaquwan"
                 artifactId = "oxylab-startup-sdk"
-                version = "1.0.2"
+                version = "1.0.3"
             }
         }
     }
