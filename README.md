@@ -75,6 +75,25 @@ class MyApplication : Application() {
 }
 ```
 
+### 🚫 Excluding Activities from App Resume Ads (App Open Ads)
+
+If you want to prevent App Resume (App Open) ads from showing when the user resumes the app on specific screens (e.g. Splash, Language selection, Onboarding), you can register them for exclusion:
+
+```kotlin
+// Inside your Application onCreate()
+OxylabKit.appOpenAdHelper.excludeActivity(
+    SplashActivity::class.java,
+    LanguageActivity::class.java,
+    OnboardingActivity::class.java
+)
+```
+
+If you ever need to re-enable them dynamically later:
+
+```kotlin
+OxylabKit.appOpenAdHelper.includeActivity(TargetActivity::class.java)
+```
+
 ---
 
 ## 💧 2. Splash Screen
