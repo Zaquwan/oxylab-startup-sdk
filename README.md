@@ -378,7 +378,64 @@ You can easily reskin the entire SDK's default layouts without writing any Kotli
 
 ---
 
-## 🛠️ 6. Bundled Resource Reference
+## 🎨 6. Creating a Completely Custom UI
+
+If the default layout and resource overrides are not enough, the SDK allows you to completely replace the entire UI layout for any screen. 
+
+The SDK separates **Business Logic** (ad loading, timers, remote config, navigation, privacy policies) from **Presentation Logic** (the actual views). You can provide your own layout XML files and just point the SDK to the views it needs to interact with.
+
+### How it works
+
+1. **Provide Your Layout**: Override `getLayoutResId()` and return your custom XML layout (e.g., `R.layout.my_splash_screen`).
+2. **Provide the View IDs**: If the SDK needs to interact with a specific view (like a progress bar, a retry button, or a TextView for an error message), you must override the corresponding ID getter (e.g., `getProgressBarId()`) and return the ID you assigned in your layout.
+3. **No Crashes on Missing Views**: The SDK uses safe `findViewById` logic. If you intentionally omit a view from your layout (like an error text view) and return an invalid ID or keep the default, the SDK simply skips interacting with it without crashing.
+
+### Example: A Minimal Custom Splash Screen
+
+**`res/layout/my_custom_splash.xml`**
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:gravity="center">
+
+    <!-- Your fully custom design -->
+    <ImageView android:src="@drawable/my_logo" />
+    <ProgressBar android:id="@+id/my_custom_loader" />
+
+    <FrameLayout
+        android:id="@+id/my_custom_ad_container"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
+</LinearLayout>
+```
+
+**`SplashActivity.kt`**
+```kotlin
+class SplashActivity : OxylabBaseSplashActivity() {
+    
+    // Core requirements
+    override fun getNextActivityClass()    = LanguageActivity::class.java
+    override fun getNativeAdUnitId()       = "ca-app-pub-XXX/YYY"
+    override fun getInterstitialAdUnitId() = "ca-app-pub-XXX/ZZZ"
+
+    // 1. Tell the SDK to use your layout
+    override fun getLayoutResId() = R.layout.my_custom_splash
+    
+    // 2. Tell the SDK where your views are
+    override fun getAdContainerId() = R.id.my_custom_ad_container
+    override fun getProgressBarId() = R.id.my_custom_loader
+    
+    // Note: We didn't provide a TitleTextView or ErrorLayout. 
+    // The SDK will simply ignore those features safely!
+}
+```
+
+---
+
+## 🛠️ 7. Bundled Resource Reference
 
 All SDK resources are accessible via `com.oxylab.sdk.startup.R.*`.
 
