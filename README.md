@@ -260,11 +260,11 @@ Only 3 overrides required. The SDK inserts a single built-in onboarding page:
 ```kotlin
 class OnboardingActivity : OxylabBaseOnboardingActivity() {
     override fun getNextActivityClass()          = MainActivity::class.java
-    override fun getNativeAdUnitIdFullScreen()   = "ca-app-pub-XXX/FULL"
+    override fun getNativeAdUnitIdFullScreen(isFirstTime: Boolean) = "ca-app-pub-XXX/FULL"
     override fun getInterstitialAdUnitId()       = "ca-app-pub-XXX/EXIT"
 
     // Return null for pages that shouldn't show ads
-    override fun getNativeAdUnitIdPage(position: Int): String? = null
+    override fun getNativeAdUnitIdPage(position: Int, isFirstTime: Boolean): String? = null
 }
 ```
 
@@ -279,9 +279,9 @@ import com.oxylab.sdk.startup.onboarding.OnboardingPageData
 
 class OnboardingActivity : OxylabBaseOnboardingActivity() {
     override fun getNextActivityClass()          = MainActivity::class.java
-    override fun getNativeAdUnitIdFullScreen()   = "ca-app-pub-XXX/FULL"
+    override fun getNativeAdUnitIdFullScreen(isFirstTime: Boolean) = "ca-app-pub-XXX/FULL"
     override fun getInterstitialAdUnitId()       = "ca-app-pub-XXX/EXIT"
-    override fun getNativeAdUnitIdPage(position: Int) = "ca-app-pub-XXX/PAGE"
+    override fun getNativeAdUnitIdPage(position: Int, isFirstTime: Boolean) = "ca-app-pub-XXX/PAGE"
 
     // Optional: Customize default UI pages without creating XML
     override fun getOnboardingPageDataList() = listOf(
@@ -302,10 +302,10 @@ class OnboardingActivity : OxylabBaseOnboardingActivity() {
 
     // Required
     override fun getNextActivityClass()        = MainActivity::class.java
-    override fun getNativeAdUnitIdFullScreen() = "ca-app-pub-XXX/FULL"
+    override fun getNativeAdUnitIdFullScreen(isFirstTime: Boolean) = "ca-app-pub-XXX/FULL"
     override fun getInterstitialAdUnitId()     = "ca-app-pub-XXX/EXIT"
 
-    override fun getNativeAdUnitIdPage(position: Int): String? {
+    override fun getNativeAdUnitIdPage(position: Int, isFirstTime: Boolean): String? {
         return when (position) {
             0    -> "ca-app-pub-XXX/PAGE0"
             else -> null

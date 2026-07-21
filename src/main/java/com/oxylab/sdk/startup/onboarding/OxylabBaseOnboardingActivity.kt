@@ -35,8 +35,8 @@ abstract class OxylabBaseOnboardingActivity : AppCompatActivity() {
     // ── Required — must be provided by the app ──
 
     /** Ad Unit IDs */
-    abstract fun getNativeAdUnitIdFullScreen(): String
-    abstract fun getNativeAdUnitIdPage(position: Int): String?
+    abstract fun getNativeAdUnitIdFullScreen(isFirstTime: Boolean): String
+    abstract fun getNativeAdUnitIdPage(position: Int, isFirstTime: Boolean): String?
     abstract fun getInterstitialAdUnitId(): String
 
     /** The Activity to start after onboarding finishes */
@@ -188,7 +188,7 @@ abstract class OxylabBaseOnboardingActivity : AppCompatActivity() {
         val prefs = getSharedPreferences("oxylab_onboarding_ads", Context.MODE_PRIVATE)
         val isFirstTimeFullScreenAdLoaded = prefs.getBoolean("is_first_full", true)
         
-        nativeAdHelper.loadNativeAd(getNativeAdUnitIdFullScreen(), "ONBOARDING_FULL", onLoaded = { loadedAd ->
+        nativeAdHelper.loadNativeAd(getNativeAdUnitIdFullScreen(isFirstTimeFullScreenAdLoaded), "ONBOARDING_FULL", onLoaded = { loadedAd ->
             preloadedFullScreenAd = loadedAd
             isFullScreenAdReady = true
             if (isFirstTimeFullScreenAdLoaded) {
@@ -344,16 +344,23 @@ abstract class OxylabBaseOnboardingActivity : AppCompatActivity() {
                 val nativeAdContainer = view.findViewById<ViewGroup>(getAdContainerId())
                 if (nativeAdContainer != null && !pagesWithAdsRequested.contains(position)) {
                     pagesWithAdsRequested.add(position)
-                    val adId = getNativeAdUnitIdPage(position)
+                    val prefs = view.context.getSharedPreferences("oxylab_onboarding_ads", Context.MODE_PRIVATE)
+                    val isFirstTimePage = prefs.getBoolean("is_first_page_$position", true)
+                    
+                    val adId = getNativeAdUnitIdPage(position, isFirstTimePage)
                     if (adId != null) {
                         nativeAdContainer.visibility = View.VISIBLE
-                        nativeAdHelper.loadNativeAdWithLayout01(adId, nativeAdContainer, "ONBOARDING_PAGE_$position")
+                        nativeAdHelper.loadNativeAdWithLayout01(adId, nativeAdContainer, "ONBOARDING_PAGE_$position") {
+                            if (isFirstTimePage) prefs.edit().putBoolean("is_first_page_$position", false).apply()
+                        }
                     } else {
                         // Use INVISIBLE to maintain layout consistency and prevent shifting
                         nativeAdContainer.visibility = View.GONE
                     }
                 } else if (nativeAdContainer != null) {
-                    val adId = getNativeAdUnitIdPage(position)
+                    val prefs = view.context.getSharedPreferences("oxylab_onboarding_ads", Context.MODE_PRIVATE)
+                    val isFirstTimePage = prefs.getBoolean("is_first_page_$position", true)
+                    val adId = getNativeAdUnitIdPage(position, isFirstTimePage)
                     if (adId == null) {
                         nativeAdContainer.visibility = View.GONE
                     } else {
