@@ -345,13 +345,13 @@ abstract class OxylabBaseOnboardingActivity : AppCompatActivity() {
                 if (nativeAdContainer != null && !pagesWithAdsRequested.contains(position)) {
                     pagesWithAdsRequested.add(position)
                     val prefs = view.context.getSharedPreferences("oxylab_onboarding_ads", Context.MODE_PRIVATE)
-                    val isFirstTimePage = prefs.getBoolean("is_first_page_$position", true)
+                    val isFirstTimePage = prefs.getBoolean("is_first_page_$originalIndex", true)
                     
-                    val adId = getNativeAdUnitIdPage(position, isFirstTimePage)
+                    val adId = getNativeAdUnitIdPage(originalIndex, isFirstTimePage)
                     if (adId != null) {
                         nativeAdContainer.visibility = View.VISIBLE
-                        nativeAdHelper.loadNativeAdWithLayout01(adId, nativeAdContainer, "ONBOARDING_PAGE_$position") {
-                            if (isFirstTimePage) prefs.edit().putBoolean("is_first_page_$position", false).apply()
+                        nativeAdHelper.loadNativeAdWithLayout01(adId, nativeAdContainer, "ONBOARDING_PAGE_$originalIndex") {
+                            if (isFirstTimePage) prefs.edit().putBoolean("is_first_page_$originalIndex", false).apply()
                         }
                     } else {
                         // Use INVISIBLE to maintain layout consistency and prevent shifting
@@ -359,8 +359,8 @@ abstract class OxylabBaseOnboardingActivity : AppCompatActivity() {
                     }
                 } else if (nativeAdContainer != null) {
                     val prefs = view.context.getSharedPreferences("oxylab_onboarding_ads", Context.MODE_PRIVATE)
-                    val isFirstTimePage = prefs.getBoolean("is_first_page_$position", true)
-                    val adId = getNativeAdUnitIdPage(position, isFirstTimePage)
+                    val isFirstTimePage = prefs.getBoolean("is_first_page_$originalIndex", true)
+                    val adId = getNativeAdUnitIdPage(originalIndex, isFirstTimePage)
                     if (adId == null) {
                         nativeAdContainer.visibility = View.GONE
                     } else {
