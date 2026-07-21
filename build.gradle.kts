@@ -1,5 +1,6 @@
 plugins {
-    id("com.android.library")
+    id("com.android.library") version "8.3.0"
+    id("org.jetbrains.kotlin.android") version "1.9.23"
 }
 
 android {
