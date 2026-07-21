@@ -61,7 +61,7 @@ dependencies {
 // JitPack calls :bundleReleaseAar directly — no maven-publish plugin needed.
 // group and version are all JitPack requires at the root level.
 group = "com.github.Zaquwan"
-version = "1.2.4"
+version = "1.2.5"
 
 kotlin {
     jvmToolchain(17)

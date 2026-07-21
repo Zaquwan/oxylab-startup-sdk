@@ -32,6 +32,17 @@ class StarterAppOpenAdHelper(
     private var currentActivity: Activity? = null
     
     private var appOpenAdUnitId: String? = null
+    private val excludedActivities = mutableSetOf<Class<out Activity>>()
+
+    /** Exclude specific activities from showing the app open ad on resume */
+    fun excludeActivity(vararg activityClasses: Class<out Activity>) {
+        excludedActivities.addAll(activityClasses)
+    }
+
+    /** Include specific activities back if they were previously excluded */
+    fun includeActivity(vararg activityClasses: Class<out Activity>) {
+        excludedActivities.removeAll(activityClasses.toSet())
+    }
 
     init {
         application.registerActivityLifecycleCallbacks(this)
@@ -76,6 +87,7 @@ class StarterAppOpenAdHelper(
     }
 
     fun showAppOpenAdIfAvailable(activity: Activity) {
+        if (excludedActivities.contains(activity.javaClass)) return
         if (isShowingAd || adsManager.isInterstitialShowing) return
         if (!isAdAvailable()) {
             loadAppOpenAd()
