@@ -351,7 +351,34 @@ class OnboardingActivity : OxylabBaseOnboardingActivity() {
 
 ---
 
-## 🛠️ 5. Bundled Resource Reference
+## 🎨 5. Global Theming & Resource Overrides
+
+You can easily reskin the entire SDK's default layouts without writing any Kotlin or XML layouts. Simply override the SDK's built-in strings or colors by declaring resources with the exact same name in your app's `strings.xml` or `colors.xml`.
+
+### Override Colors (in your app's `colors.xml`)
+
+```xml
+<!-- Override the SDK's default dark theme to match your branding -->
+<color name="oxylab_default_bg">#FFFFFF</color>       <!-- Main background -->
+<color name="oxylab_default_surface">#F5F5F5</color>  <!-- Cards/Containers -->
+<color name="oxylab_default_accent">#FF0000</color>   <!-- Buttons & active states -->
+<color name="oxylab_default_text_primary">#000000</color>
+<color name="oxylab_default_text_secondary">#666666</color>
+```
+
+### Override Strings (in your app's `strings.xml`)
+
+```xml
+<!-- Change the global "Continue" button text across all onboarding pages -->
+<string name="oxylab_default_continue">Next Step</string>
+
+<!-- Change default loading text -->
+<string name="oxylab_default_loading">Please wait...</string>
+```
+
+---
+
+## 🛠️ 6. Bundled Resource Reference
 
 All SDK resources are accessible via `com.oxylab.sdk.startup.R.*`.
 
