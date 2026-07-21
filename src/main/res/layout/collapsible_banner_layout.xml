@@ -1,0 +1,18 @@
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="#1F1F1F">
+    <!-- Banner container -->
+    <FrameLayout
+        android:id="@+id/ad_holder"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"/>
+    <ImageView
+        android:id="@+id/btn_close_banner"
+        android:layout_width="30dp"
+        android:layout_height="30dp"
+        android:layout_gravity="end|top"
+        android:padding="6dp"
+        android:src="@android:drawable/ic_menu_close_clear_cancel"
+        android:background="#66000000"/>
+</FrameLayout>

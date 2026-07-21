@@ -36,7 +36,7 @@ class StarterInterstitialAdHelper(
 ) {
 
     private companion object {
-        const val TAG = "xcxcxc"
+        const val TAG = "InterstitialAdHelper"
     }
 
     private var mInterstitialAd: InterstitialAd? = null
@@ -44,6 +44,7 @@ class StarterInterstitialAdHelper(
     private var currentAdVarName: String = "INTER"
     private var currentAdUnitId: String = ""
 
+    @JvmOverloads
     fun loadAd(adUnitId: String, adVarName: String = "INTER") {
         if (!configProvider.isAdEnabled(adVarName)) {
             Log.d(TAG, "$adVarName load SKIPPED: disabled by specific flag")
@@ -75,18 +76,19 @@ class StarterInterstitialAdHelper(
         })
     }
 
-    fun showAd(ignoreInterval: Boolean = false, onAdDismissed: () -> Unit) {
+    @JvmOverloads
+    fun showAd(ignoreInterval: Boolean = false, showLoadingDialog: Boolean = true, onAdDismissed: (() -> Unit)? = null) {
         if (!configProvider.isAdEnabled(currentAdVarName)) {
-            onAdDismissed()
+            onAdDismissed?.invoke()
             return
         }
         if (!configProvider.isInterstitialEnabled()) {
-            onAdDismissed()
+            onAdDismissed?.invoke()
             return
         }
 
         if (activity.isFinishing || activity.isDestroyed) {
-            onAdDismissed()
+            onAdDismissed?.invoke()
             return
         }
 
@@ -94,47 +96,51 @@ class StarterInterstitialAdHelper(
             val lastTime = timingProvider.getLastAdTime(activity)
             val currentTime = System.currentTimeMillis()
             if (currentTime - lastTime < configProvider.getInterstitialInterval()) {
-                onAdDismissed()
+                onAdDismissed?.invoke()
                 return
             }
         }
 
         if (isAdLoaded()) {
-            val dialog = Dialog(activity, dialogStyleResId)
-            dialog.setContentView(dialogLayoutResId)
-            dialog.setCancelable(false)
+            if (showLoadingDialog) {
+                val dialog = Dialog(activity, dialogStyleResId)
+                dialog.setContentView(dialogLayoutResId)
+                dialog.setCancelable(false)
 
-            try {
-                dialog.show()
-            } catch (e: Exception) {
-                Log.e(TAG, "Failed to show loading dialog: ${e.message}")
-                showAdInternal(ignoreInterval, onAdDismissed, null)
-                return
-            }
-
-            Handler(Looper.getMainLooper()).postDelayed({
-                if (!activity.isFinishing && !activity.isDestroyed) {
-                    showAdInternal(ignoreInterval, onAdDismissed, dialog)
-                } else {
-                    try {
-                        if (dialog.isShowing) {
-                            dialog.dismiss()
-                        }
-                    } catch (e: Exception) {}
-                    onAdDismissed()
+                try {
+                    dialog.show()
+                } catch (e: Exception) {
+                    Log.e(TAG, "Failed to show loading dialog: ${e.message}")
+                    showAdInternal(ignoreInterval, onAdDismissed, null)
+                    return
                 }
-            }, 2000)
+
+                Handler(Looper.getMainLooper()).postDelayed({
+                    if (!activity.isFinishing && !activity.isDestroyed) {
+                        showAdInternal(ignoreInterval, onAdDismissed, dialog)
+                    } else {
+                        try {
+                            if (dialog.isShowing) {
+                                dialog.dismiss()
+                            }
+                        } catch (e: Exception) {}
+                        onAdDismissed?.invoke()
+                    }
+                }, 2000)
+            } else {
+                showAdInternal(ignoreInterval, onAdDismissed, null)
+            }
         } else {
-            onAdDismissed()
+            onAdDismissed?.invoke()
         }
     }
 
-    private fun showAdInternal(ignoreInterval: Boolean, onAdDismissed: () -> Unit, dialog: Dialog?) {
+    private fun showAdInternal(ignoreInterval: Boolean, onAdDismissed: (() -> Unit)?, dialog: Dialog?) {
         if (activity.isFinishing || activity.isDestroyed) {
             try {
                 if (dialog?.isShowing == true) dialog.dismiss()
             } catch (e: Exception) {}
-            onAdDismissed()
+            onAdDismissed?.invoke()
             return
         }
         if (isAdLoaded()) {
@@ -142,7 +148,7 @@ class StarterInterstitialAdHelper(
             mInterstitialAd?.fullScreenContentCallback = object : FullScreenContentCallback() {
                 override fun onAdShowedFullScreenContent() {
                     isCallbackTriggered = true
-                    Log.e("xcxcxc", "$currentAdVarName : $currentAdUnitId Shown")
+                    Log.d(TAG, "$currentAdVarName : $currentAdUnitId Shown")
                     adsManager.isInterstitialShowing = true
                     try {
                         if (dialog?.isShowing == true) dialog.dismiss()
@@ -163,7 +169,7 @@ class StarterInterstitialAdHelper(
                     if (!ignoreInterval) {
                         timingProvider.updateLastAdTime(activity)
                     }
-                    onAdDismissed()
+                    onAdDismissed?.invoke()
                 }
 
                 override fun onAdFailedToShowFullScreenContent(adError: AdError) {
@@ -175,7 +181,7 @@ class StarterInterstitialAdHelper(
                     } catch (e: Exception) {
                         Log.e(TAG, "Error dismissing dialog on fail: ${e.message}")
                     }
-                    onAdDismissed()
+                    onAdDismissed?.invoke()
                 }
             }
 
@@ -188,7 +194,7 @@ class StarterInterstitialAdHelper(
                     } catch (e: Exception) {
                         Log.e(TAG, "Error dismissing dialog on timeout: ${e.message}")
                     }
-                    onAdDismissed()
+                    onAdDismissed?.invoke()
                 }
             }, 5000)
 
@@ -197,7 +203,7 @@ class StarterInterstitialAdHelper(
             try {
                 if (dialog?.isShowing == true) dialog.dismiss()
             } catch (e: Exception) {}
-            onAdDismissed()
+            onAdDismissed?.invoke()
         }
     }
 

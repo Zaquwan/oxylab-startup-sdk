@@ -1,27 +1,38 @@
 # 🚀 Oxylab Starter Kit (SDK)
 
-The **Oxylab Starter Kit** is a production-ready Android library designed to completely eliminate boilerplate code across multiple applications. It provides the **Splash Screen, Language Selection, Onboarding, and Ad Management** flows as simple, plug-and-play Base Activities.
+The **Oxylab Starter Kit** is a production-ready Android library that completely eliminates boilerplate code across multiple applications. It provides fully functional **Splash Screen, Language Selection, and Onboarding** flows as simple, plug-and-play Base Activities.
 
-Just like a premium Google SDK, you don't need to wire up complex interfaces, adapters, or engines. You simply extend our Base Activities, provide your Layout IDs, and the SDK handles the rest!
+> **New in this version:** Every screen now ships with a built-in default layout. You no longer need to create XML files just to get started — only your ad unit IDs and the next Activity class are required.
 
 ---
 
 ## ✨ Key Features
 
-- **True Plug-and-Play**: Just extend `OxylabBaseSplashActivity` and you have a fully functional splash screen with AdMob, Firebase Auth, and Network connectivity.
-- **Bundled Resources**: Native ad XML layouts, shimmer effects, and fade animations are built right in.
-- **Zero Adapter Boilerplate**: The SDK automatically creates `RecyclerView` and `ViewPager2` adapters for your Language and Onboarding screens.
-- **Smart Ad Management**: Built-in lazy-loading, tracking, and 3-second delay timers are handled automatically.
+| Feature | Details |
+|---|---|
+| **Zero-XML Quick Start** | All screens have built-in default layouts. Override only what you need. |
+| **True Plug-and-Play** | Extend a Base Activity, provide ad IDs → fully working screen |
+| **Bundled Ad Layouts** | Native, shimmer, and full-screen ad XML layouts built in |
+| **Zero Adapter Boilerplate** | SDK creates `RecyclerView` and `ViewPager2` adapters automatically |
+| **Smart Ad Management** | Lazy-loading, tracking, and 3-second delay timers handled automatically |
+| **Firebase Auth** | Optional anonymous sign-in with retry / offline handling |
 
 ---
 
 ## 📦 Installation
 
-In your new application's `settings.gradle` or `build.gradle`, include the SDK as a module:
+In your application's `settings.gradle.kts`, include the SDK as a local module:
 
-```groovy
+```kotlin
+include(":oxylab-startup-sdk")
+project(":oxylab-startup-sdk").projectDir = java.io.File("../startup-sdk-oxylab")
+```
+
+Then add the dependency in your app's `build.gradle.kts`:
+
+```kotlin
 dependencies {
-    implementation project(':startup-sdk') 
+    implementation(project(":oxylab-startup-sdk"))
 }
 ```
 
@@ -29,34 +40,34 @@ dependencies {
 
 ## 🏗️ 1. Global Initialization
 
-Initialize the SDK exactly once in your `Application` class. This handles setting up AdMob and global ad configurations.
+Initialize the SDK **once** in your `Application` class:
 
 ```kotlin
 class MyApplication : Application() {
     override fun onCreate() {
         super.onCreate()
-        
-        // Option A: Use static default values
+
+        // Option A: Static defaults
         OxylabKit.initialize(
             context = this,
             sdkConfig = DefaultOxylabConfig(
                 globalAds = true,
                 interstitialAds = true,
                 nativeAds = true,
-                intervalMs = 40_000L // 40 seconds
+                intervalMs = 40_000L
             )
         )
-        
-        // Option B: Provide dynamic values from Firebase Remote Config!
+
+        // Option B: Dynamic values from Firebase Remote Config
         /*
         OxylabKit.initialize(
             context = this,
             sdkConfig = object : OxylabConfig {
-                override fun isGlobalAdsEnabled() = remoteConfig.getBoolean("ads_enabled")
+                override fun isGlobalAdsEnabled()    = remoteConfig.getBoolean("ads_enabled")
                 override fun isInterstitialEnabled() = remoteConfig.getBoolean("interstitial_enabled")
-                override fun isNativeEnabled() = remoteConfig.getBoolean("native_enabled")
-                override fun isBannerEnabled() = remoteConfig.getBoolean("banner_enabled")
-                override fun getInterstitialIntervalMs() = remoteConfig.getLong("interstitial_interval_ms")
+                override fun isNativeEnabled()       = remoteConfig.getBoolean("native_enabled")
+                override fun isBannerEnabled()       = remoteConfig.getBoolean("banner_enabled")
+                override fun getInterstitialInterval() = remoteConfig.getLong("interstitial_interval_ms")
             }
         )
         */
@@ -66,146 +77,332 @@ class MyApplication : Application() {
 
 ---
 
-## 💧 2. Splash Screen (Ultra Simple)
+## 💧 2. Splash Screen
 
-Create your `activity_splash.xml`. Then, just extend `OxylabBaseSplashActivity` and provide the view IDs. 
+### ⚡ Minimum Setup (uses SDK default layout)
 
-**The SDK will automatically handle Firebase Auth, AdMob loading loops, Network checks, and the 8-second delay timer!**
+Only 3 overrides are required — the SDK provides everything else including the layout:
 
 ```kotlin
 class SplashActivity : OxylabBaseSplashActivity() {
-    
-    // 1. Provide your custom UI layout
-    override fun getLayoutResId() = R.layout.activity_splash
-    override fun getAdContainerId() = R.id.adContainer
-    
-    // Provide Error/Loading View IDs
-    override fun getErrorLayoutId() = R.id.layoutError
-    override fun getTitleTextViewId() = R.id.tvTitle
-    override fun getMessageTextViewId() = R.id.tvMessage
-    override fun getProgressBarId() = R.id.progressBar
-    override fun getRetryButtonId() = R.id.btnRetry
+    override fun getNextActivityClass()     = LanguageActivity::class.java
+    override fun getNativeAdUnitId()        = "ca-app-pub-XXX/YYY"
+    override fun getInterstitialAdUnitId()  = "ca-app-pub-XXX/ZZZ"
+}
+```
 
-    // 2. Where to go next?
-    override fun getNextActivityClass() = LanguageActivity::class.java
+The built-in layout includes your app name, a Lottie loading spinner, an "Ad" label, and a native ad container at the bottom.
 
-    // 3. Ad IDs
-    override fun getNativeAdUnitId() = "ca-app-pub-XXX/YYY"
-    override fun getInterstitialAdUnitId() = "ca-app-pub-XXX/ZZZ"
-    
-    // 4. Optional: Customize Timing & Behavior
-    override fun getMinSplashTimeMs() = 8000L
-    override fun getMaxWaitTimeMs() = 12000L
-    override fun getOfflineMaxWaitTimeMs() = 5000L
-    override fun isDarkModeEnabled() = true
+---
+
+### 🎨 Easy UI Customization (No XML Required)
+
+If you want to use the default layout but change the app name and logo, simply override these methods:
+
+```kotlin
+class SplashActivity : OxylabBaseSplashActivity() {
+    override fun getNextActivityClass()     = LanguageActivity::class.java
+    override fun getNativeAdUnitId()        = "ca-app-pub-XXX/YYY"
+    override fun getInterstitialAdUnitId()  = "ca-app-pub-XXX/ZZZ"
+
+    // Optional: Customize default UI without creating XML
+    override fun getAppNameStringResId()    = R.string.my_app_name
+    override fun getAppDescStringResId()    = R.string.my_app_desc
+    override fun getAppLogoResId()          = R.drawable.my_app_logo
 }
 ```
 
 ---
 
-## 🌐 3. Language Selection (Ultra Simple)
+### 🎨 Full Custom Layout
 
-You don't need to write a `RecyclerView.Adapter`. Just provide your item layout XML and tell the SDK what languages to show!
+Override any or all of the layout methods when you want your own design:
+
+```kotlin
+class SplashActivity : OxylabBaseSplashActivity() {
+
+    // Required
+    override fun getNextActivityClass()     = LanguageActivity::class.java
+    override fun getNativeAdUnitId()        = "ca-app-pub-XXX/YYY"
+    override fun getInterstitialAdUnitId()  = "ca-app-pub-XXX/ZZZ"
+
+    // Optional layout overrides
+    override fun getLayoutResId()       = R.layout.activity_splash
+    override fun getAdContainerId()     = R.id.adContainer
+    override fun getErrorLayoutId()     = R.id.layoutError
+    override fun getTitleTextViewId()   = R.id.tvTitle
+    override fun getMessageTextViewId() = R.id.tvMessage
+    override fun getProgressBarId()     = R.id.lottieLoader
+    override fun getRetryButtonId()     = R.id.btnRetry
+
+    // Optional behavior tweaks
+    override fun getMinSplashTimeMs()       = 3000L
+    override fun getMaxWaitTimeMs()         = 8000L
+    override fun getOfflineMaxWaitTimeMs()  = 3000L
+    override fun isDarkModeEnabled()        = true
+    override fun isFirebaseAuthRequired()   = false
+}
+```
+
+### Splash — Required vs Optional Reference
+
+| Method | Required? | Default value |
+|---|---|---|
+| `getNextActivityClass()` | ✅ Yes | — |
+| `getNativeAdUnitId()` | ✅ Yes | — |
+| `getInterstitialAdUnitId()` | ✅ Yes | — |
+| `getAppNameStringResId()` | ⬜ Optional | `null` |
+| `getAppDescStringResId()` | ⬜ Optional | `null` |
+| `getAppLogoResId()` | ⬜ Optional | `null` |
+| `getLayoutResId()` | ⬜ Optional | `R.layout.default_splash` |
+| `getAdContainerId()` | ⬜ Optional | `R.id.oxylab_splash_ad_container` |
+| `getErrorLayoutId()` | ⬜ Optional | `R.id.oxylab_splash_layout_error` |
+| `getTitleTextViewId()` | ⬜ Optional | `R.id.oxylab_splash_tv_title` |
+| `getMessageTextViewId()` | ⬜ Optional | `R.id.oxylab_splash_tv_message` |
+| `getProgressBarId()` | ⬜ Optional | `R.id.oxylab_splash_progress` |
+| `getRetryButtonId()` | ⬜ Optional | `R.id.oxylab_splash_btn_retry` |
+| `getMinSplashTimeMs()` | ⬜ Optional | `8000L` |
+| `getMaxWaitTimeMs()` | ⬜ Optional | `12000L` |
+| `getOfflineMaxWaitTimeMs()` | ⬜ Optional | `5000L` |
+| `isDarkModeEnabled()` | ⬜ Optional | `true` |
+| `isFirebaseAuthRequired()` | ⬜ Optional | `true` |
+
+---
+
+## 🌐 3. Language Selection
+
+### ⚡ Minimum Setup (uses SDK default layout + default item binding)
+
+Only 4 overrides required:
 
 ```kotlin
 class LanguageActivity : OxylabBaseLanguageActivity() {
-    
-    // 1. Provide your Screen Layout
-    override fun getLayoutResId() = R.layout.activity_language
-    override fun getRecyclerViewId() = R.id.rvLanguages
-    override fun getDoneButtonId() = R.id.btnDone
-    override fun getAdContainerId() = R.id.adContainer
-
-    // 2. Provide the Data
-    override fun getLanguages() = listOf(
-        LanguageItem("en", "English", "English", "🇺🇸"),
-        LanguageItem("hi", "Hindi", "हिंदी", "🇮🇳")
-    )
     override fun getNextActivityClass() = OnboardingActivity::class.java
 
-    // 3. Ad IDs (Dynamic based on whether user is new or returning!)
+    override fun getLanguages() = listOf(
+        LanguageItem("en", "English", "English", "🇺🇸"),
+        LanguageItem("hi", "Hindi",   "हिन्दी",  "🇮🇳"),
+        LanguageItem("es", "Spanish", "Español", "🇪🇸")
+    )
+
+    override fun getNativeAdUnitIdInitial(isFirstTime: Boolean)   = "ca-app-pub-XXX/YYY"
+    override fun getNativeAdUnitIdSelection(isFirstTime: Boolean) = "ca-app-pub-XXX/YYY"
+}
+```
+
+The built-in item layout shows the flag emoji, language name, native name, and a checkmark for the selected language. The card background automatically switches to an accent-bordered style when selected.
+
+---
+
+### 🎨 Full Custom Layout
+
+```kotlin
+class LanguageActivity : OxylabBaseLanguageActivity() {
+
+    // Required
+    override fun getNextActivityClass() = OnboardingActivity::class.java
+
+    override fun getLanguages() = listOf(
+        LanguageItem("en", "English", "English", "🇺🇸"),
+        LanguageItem("hi", "Hindi",   "हिन्दी",  "🇮🇳")
+    )
+
     override fun getNativeAdUnitIdInitial(isFirstTime: Boolean): String {
         return if (isFirstTime) "ca-app-pub-XXX/NEW_START" else "ca-app-pub-XXX/RETURNING_START"
     }
-    
+
     override fun getNativeAdUnitIdSelection(isFirstTime: Boolean): String {
         return if (isFirstTime) "ca-app-pub-XXX/NEW_CLICK" else "ca-app-pub-XXX/RETURNING_CLICK"
     }
 
-    // 4. Provide your Item Layout & Bind UI
-    override fun getItemLayoutResId() = R.layout.item_language
-    
+    // Optional layout overrides
+    override fun getLayoutResId()      = R.layout.dialog_language
+    override fun getRecyclerViewId()   = R.id.recyclerView
+    override fun getDoneButtonId()     = R.id.continueButton
+    override fun getAdContainerId()    = R.id.languageNativeAdContiner
+    override fun getItemLayoutResId()  = R.layout.item_language
+
+    // Required only when you supply a custom item layout
     override fun bindLanguageItem(view: View, language: LanguageItem, isSelected: Boolean) {
-        // The SDK passes you the inflated view!
-        view.findViewById<TextView>(R.id.tvFlag).text = language.flag
-        view.findViewById<TextView>(R.id.tvName).text = language.name
-        
-        // Example: Change border color if selected
-        view.setBackgroundResource(if (isSelected) R.drawable.bg_selected else R.drawable.bg_normal)
+        view.findViewById<TextView>(R.id.languageEnglishName).text = language.name
+        view.findViewById<TextView>(R.id.languageNativeName).text  = language.nativeName
+        val checkIcon = view.findViewById<ImageView>(R.id.checkIcon)
+        checkIcon.visibility = if (isSelected) View.VISIBLE else View.GONE
     }
 }
 ```
-*Note: The SDK tracks whether the user is new/returning, automatically hides the "Done" button for 2 seconds, and handles the first-click ad refresh!*
+
+> **Note:** The SDK automatically hides the "Done" button for 2 seconds after the first selection, refreshes the native ad on the first language tap, and saves the selected language code to `SharedPreferences`.
+
+### Language — Required vs Optional Reference
+
+| Method | Required? | Default value |
+|---|---|---|
+| `getNextActivityClass()` | ✅ Yes | — |
+| `getLanguages()` | ✅ Yes | — |
+| `getNativeAdUnitIdInitial()` | ✅ Yes | — |
+| `getNativeAdUnitIdSelection()` | ✅ Yes | — |
+| `getLayoutResId()` | ⬜ Optional | `R.layout.default_language` |
+| `getRecyclerViewId()` | ⬜ Optional | `R.id.oxylab_lang_recycler` |
+| `getDoneButtonId()` | ⬜ Optional | `R.id.oxylab_lang_btn_done` |
+| `getAdContainerId()` | ⬜ Optional | `R.id.oxylab_lang_ad_container` |
+| `getItemLayoutResId()` | ⬜ Optional | `R.layout.default_language_item` |
+| `bindLanguageItem()` | ⬜ Optional | SDK default (flag + name + check) |
 
 ---
 
-## 📱 4. Onboarding Screen (Ultra Simple)
+## 📱 4. Onboarding
 
-You don't need to write a `ViewPager2` adapter or manage dynamic full-screen ads. Just give the SDK your layout IDs!
+### ⚡ Minimum Setup (uses SDK default layout + default page)
+
+Only 3 overrides required. The SDK inserts a single built-in onboarding page:
+
+```kotlin
+class OnboardingActivity : OxylabBaseOnboardingActivity() {
+    override fun getNextActivityClass()          = MainActivity::class.java
+    override fun getNativeAdUnitIdFullScreen()   = "ca-app-pub-XXX/FULL"
+    override fun getInterstitialAdUnitId()       = "ca-app-pub-XXX/EXIT"
+
+    // Return null for pages that shouldn't show ads
+    override fun getNativeAdUnitIdPage(position: Int): String? = null
+}
+```
+
+---
+
+### 🎨 Easy UI Customization (No XML Required)
+
+If you want to use the default layout but need multiple pages with custom images, titles, and descriptions, return a list of `OnboardingPageData`:
+
+```kotlin
+import com.oxylab.sdk.startup.onboarding.OnboardingPageData
+
+class OnboardingActivity : OxylabBaseOnboardingActivity() {
+    override fun getNextActivityClass()          = MainActivity::class.java
+    override fun getNativeAdUnitIdFullScreen()   = "ca-app-pub-XXX/FULL"
+    override fun getInterstitialAdUnitId()       = "ca-app-pub-XXX/EXIT"
+    override fun getNativeAdUnitIdPage(position: Int) = "ca-app-pub-XXX/PAGE"
+
+    // Optional: Customize default UI pages without creating XML
+    override fun getOnboardingPageDataList() = listOf(
+        OnboardingPageData(R.string.title_1, R.string.desc_1, R.drawable.image_1),
+        OnboardingPageData(R.string.title_2, R.string.desc_2, R.drawable.image_2)
+    )
+}
+```
+
+The SDK automatically generates the correct number of pages and binds your images and texts to the default layout!
+
+---
+
+### 🎨 Full Custom Layout
 
 ```kotlin
 class OnboardingActivity : OxylabBaseOnboardingActivity() {
 
-    // 1. Provide Screen Layout
-    override fun getLayoutResId() = R.layout.activity_onboarding
-    override fun getViewPagerId() = R.id.viewPager
-
-    // 2. Provide your normal onboarding page layouts
-    override fun getPageLayouts() = listOf(
-        R.layout.page_1, 
-        R.layout.page_2, 
-        R.layout.page_3
-    )
-
-    // Provide the layout that will wrap the Full-Screen Ad
-    override fun getFullScreenAdPageLayoutResId() = R.layout.page_ad_fullscreen
-    override fun getCloseButtonId() = R.id.btnCloseAd
-    
-    // IDs inside your pages
-    override fun getAdContainerId() = R.id.adContainer
-    override fun getNextButtonId() = R.id.btnNext
-    
-    override fun getNextActivityClass() = MainActivity::class.java
-
-    // 3. Ad IDs
+    // Required
+    override fun getNextActivityClass()        = MainActivity::class.java
     override fun getNativeAdUnitIdFullScreen() = "ca-app-pub-XXX/FULL"
-    override fun getInterstitialAdUnitId() = "ca-app-pub-XXX/EXIT"
-    
+    override fun getInterstitialAdUnitId()     = "ca-app-pub-XXX/EXIT"
+
     override fun getNativeAdUnitIdPage(position: Int): String? {
         return when (position) {
-            0 -> "ca-app-pub-XXX/P1"
-            3 -> "ca-app-pub-XXX/P3" // e.g., if you have 4 pages total
+            0    -> "ca-app-pub-XXX/PAGE0"
             else -> null
         }
     }
+
+    // Optional layout overrides
+    override fun getLayoutResId()                = R.layout.activity_onboarding
+    override fun getViewPagerId()                = R.id.viewPager
+    override fun getFullScreenAdPageLayoutResId() = R.layout.item_intro_ad
+    override fun getCloseButtonId()              = R.id.moveToNext
+    override fun getAdContainerId()              = R.id.nativeAdContainer
+    override fun getNextButtonId()               = R.id.btnNext
+
+    override fun getPageLayouts() = listOf(
+        R.layout.item_intro_0,
+        R.layout.item_intro_1,
+        R.layout.item_intro_2,
+        R.layout.item_intro_3
+    )
 }
 ```
-*Note: The SDK automatically injects the Full-Screen Ad at index 2 (if it loads), manages the 3-second Close button timer, and tracks lazy-loaded page ads to prevent AdMob spam.*
+
+> **Note:** The SDK automatically inserts the full-screen ad page at index 2 (once the ad loads), manages the 3-second Close button timer, and lazy-loads per-page native ads the first time each page is displayed.
+
+### Onboarding — Required vs Optional Reference
+
+| Method | Required? | Default value |
+|---|---|---|
+| `getNextActivityClass()` | ✅ Yes | — |
+| `getNativeAdUnitIdFullScreen()` | ✅ Yes | — |
+| `getInterstitialAdUnitId()` | ✅ Yes | — |
+| `getNativeAdUnitIdPage()` | ✅ Yes | — |
+| `getOnboardingPageDataList()` | ⬜ Optional | `null` |
+| `bindOnboardingPage()` | ⬜ Optional | — |
+| `getLayoutResId()` | ⬜ Optional | `R.layout.default_onboarding` |
+| `getViewPagerId()` | ⬜ Optional | `R.id.oxylab_onboarding_pager` |
+| `getPageLayouts()` | ⬜ Optional | Auto-generated from `OnboardingPageData` if provided |
+| `getFullScreenAdPageLayoutResId()` | ⬜ Optional | `R.layout.default_onboarding_ad_page` |
+| `getAdContainerId()` | ⬜ Optional | `R.id.oxylab_ob_page_ad_container` |
+| `getCloseButtonId()` | ⬜ Optional | `R.id.oxylab_ob_ad_page_close` |
+| `getNextButtonId()` | ⬜ Optional | `R.id.oxylab_ob_page_btn_next` |
 
 ---
 
-## 🛠️ Provided XML Layouts Reference
-You can use these SDK-bundled layouts directly in your code via `com.oxylab.sdk.startup.R.*`:
+## 🛠️ 5. Bundled Resource Reference
 
-**Layouts:**
-* `R.layout.native_ad_layout_01` (to `04`)
-* `R.layout.native_ad_layout_full`
-* `R.layout.shimmer_native_ad_01` (to `04`)
-* `R.layout.dialog_loading_ad`
+All SDK resources are accessible via `com.oxylab.sdk.startup.R.*`.
 
-**Animations:**
-* `R.anim.fade_in`
-* `R.anim.fade_out`
+### Default Screen Layouts (new)
+
+| Layout | Description |
+|---|---|
+| `R.layout.default_splash` | Full splash screen with Lottie loader + ad container |
+| `R.layout.default_language` | Language screen with header, RecyclerView, and ad slot |
+| `R.layout.default_language_item` | Single language row (flag · name · native name · checkmark) |
+| `R.layout.default_onboarding` | Host screen with a full-screen `ViewPager2` |
+| `R.layout.default_onboarding_page` | Single onboarding page (title · desc · dots · next btn · ad slot) |
+| `R.layout.default_onboarding_ad_page` | Full-screen ad page with managed close button |
+
+### Ad Layouts
+
+| Layout | Description |
+|---|---|
+| `R.layout.native_ad_layout_01` – `04` | Native ad templates (various styles) |
+| `R.layout.native_ad_layout_full` | Full-screen native ad layout |
+| `R.layout.shimmer_native_ad_01` – `04` | Shimmer placeholders while ads load |
+| `R.layout.dialog_loading_ad` | Interstitial loading dialog |
+
+### Drawables
+
+| Drawable | Description |
+|---|---|
+| `R.drawable.oxylab_default_btn_bg` | Pill-shaped button background |
+| `R.drawable.oxylab_default_card_bg` | Rounded card (normal state) |
+| `R.drawable.oxylab_default_card_selected_bg` | Rounded card with accent border (selected) |
+| `R.drawable.oxylab_default_dot_active` | Active indicator dot |
+| `R.drawable.oxylab_default_dot_inactive` | Inactive indicator dot |
+| `R.drawable.oxylab_default_check_circle` | Checkmark vector icon |
+
+### Animations
+
+| Resource | Description |
+|---|---|
+| `R.anim.fade_in` | Fade-in screen transition |
+| `R.anim.fade_out` | Fade-out screen transition |
 
 ---
+
+## 📐 Custom Layout Rules
+
+When providing your own layouts, your XML **must** contain views matching the IDs you return from the getter methods. The SDK uses `findViewById` — if a view ID is missing, the SDK safely skips it (no crash), but that feature will silently do nothing.
+
+For the full-screen onboarding ad page, your layout must include:
+- A `ViewGroup` for the ad content → ID returned by `getAdContainerId()`
+- A `View` for the close button → ID returned by `getCloseButtonId()`
+
+---
+
 *Built with ❤️ by Oxylab.*

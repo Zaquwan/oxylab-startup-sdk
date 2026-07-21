@@ -32,32 +32,7 @@ import kotlinx.coroutines.launch
  */
 abstract class OxylabBaseOnboardingActivity : AppCompatActivity() {
 
-    // ── Developer Must Provide These ──
-
-    /** Your custom layout XML for the onboarding screen (e.g. R.layout.activity_onboarding) */
-    abstract fun getLayoutResId(): Int
-    
-    /** The ID of your ViewPager2 */
-    abstract fun getViewPagerId(): Int
-    
-    /** 
-     * The layout resources for your normal onboarding pages (in order). 
-     * e.g., listOf(R.layout.page_1, R.layout.page_2, R.layout.page_3)
-     */
-    abstract fun getPageLayouts(): List<Int>
-    
-    /** The layout resource for the page that will hold the full-screen ad. 
-     * It MUST contain a FrameLayout/ViewGroup for the ad, and a Close button. */
-    abstract fun getFullScreenAdPageLayoutResId(): Int
-
-    /** The ID of the container where native ads should load (inside your page layouts) */
-    abstract fun getAdContainerId(): Int
-    
-    /** The ID of the close button inside your full-screen ad page layout */
-    abstract fun getCloseButtonId(): Int
-    
-    /** The ID of the "Next" or "Start" button inside your normal pages */
-    abstract fun getNextButtonId(): Int
+    // ── Required — must be provided by the app ──
 
     /** Ad Unit IDs */
     abstract fun getNativeAdUnitIdFullScreen(): String
@@ -67,7 +42,105 @@ abstract class OxylabBaseOnboardingActivity : AppCompatActivity() {
     /** The Activity to start after onboarding finishes */
     abstract fun getNextActivityClass(): Class<out Activity>
 
+    // ── Optional Layout Overrides (SDK ships default layouts if you skip these) ──
+
+    /**
+     * Your custom layout XML for the onboarding host screen.
+     * Default: SDK built-in [R.layout.default_onboarding].
+     */
+    open fun getLayoutResId(): Int = com.oxylab.sdk.startup.R.layout.default_onboarding
+
+    /**
+     * The ID of your ViewPager2.
+     * Default: [R.id.oxylab_onboarding_pager] from the SDK default layout.
+     */
+    open fun getViewPagerId(): Int = com.oxylab.sdk.startup.R.id.oxylab_onboarding_pager
+
+    /**
+     * The layout resources for your normal onboarding pages (in order).
+     * Default: Generates pages based on [getOnboardingPageDataList] if provided, 
+     * otherwise falls back to a single SDK built-in page [R.layout.default_onboarding_page].
+     */
+    open fun getPageLayouts(): List<Int> {
+        val dataList = getOnboardingPageDataList()
+        if (!dataList.isNullOrEmpty()) {
+            return List(dataList.size) { com.oxylab.sdk.startup.R.layout.default_onboarding_page }
+        }
+        return listOf(com.oxylab.sdk.startup.R.layout.default_onboarding_page)
+    }
+
+    /** 
+     * Optional: Override this to easily provide custom images and texts for the default onboarding layout, 
+     * instead of creating your own XML layout from scratch.
+     */
+    open fun getOnboardingPageDataList(): List<OnboardingPageData>? {
+        return listOf(
+            OnboardingPageData(
+                com.oxylab.sdk.startup.R.string.oxylab_default_onboarding_title_1,
+                com.oxylab.sdk.startup.R.string.oxylab_default_onboarding_desc_1,
+                com.oxylab.sdk.startup.R.drawable.oxylab_default_demo_image
+            ),
+            OnboardingPageData(
+                com.oxylab.sdk.startup.R.string.oxylab_default_onboarding_title_2,
+                com.oxylab.sdk.startup.R.string.oxylab_default_onboarding_desc_2,
+                com.oxylab.sdk.startup.R.drawable.oxylab_default_demo_image
+            ),
+            OnboardingPageData(
+                com.oxylab.sdk.startup.R.string.oxylab_default_onboarding_title_3,
+                com.oxylab.sdk.startup.R.string.oxylab_default_onboarding_desc_3,
+                com.oxylab.sdk.startup.R.drawable.oxylab_default_demo_image
+            ),
+            OnboardingPageData(
+                com.oxylab.sdk.startup.R.string.oxylab_default_onboarding_title_4,
+                com.oxylab.sdk.startup.R.string.oxylab_default_onboarding_desc_4,
+                com.oxylab.sdk.startup.R.drawable.oxylab_default_demo_image
+            )
+        )
+    }
+
+    /** 
+     * Optional: Override to perform custom view bindings on each onboarding page. 
+     */
+    open fun bindOnboardingPage(view: View, position: Int) {}
+
+    /**
+     * The layout resource for the page that holds the full-screen ad.
+     * Default: SDK built-in [R.layout.default_onboarding_ad_page].
+     */
+    open fun getFullScreenAdPageLayoutResId(): Int = com.oxylab.sdk.startup.R.layout.default_onboarding_ad_page
+
+    /**
+     * The ID of the container where native ads load (inside your page layouts).
+     * Default: [R.id.oxylab_ob_page_ad_container] from the SDK default page layout.
+     */
+    open fun getAdContainerId(): Int = com.oxylab.sdk.startup.R.id.oxylab_ob_page_ad_container
+
+    /**
+     * The ID of the container where the full-screen native ad loads.
+     * Default: [R.id.oxylab_ob_ad_page_container] from the SDK default full-screen ad layout.
+     */
+    open fun getFullScreenAdContainerId(): Int = com.oxylab.sdk.startup.R.id.oxylab_ob_ad_page_container
+
+    /**
+     * The ID of the close button inside the full-screen ad page.
+     * Default: [R.id.oxylab_ob_ad_page_close] from the SDK default ad page.
+     */
+    open fun getCloseButtonId(): Int = com.oxylab.sdk.startup.R.id.oxylab_ob_ad_page_close
+
+    /**
+     * The ID of the "Next" or "Start" button inside your normal pages.
+     * Default: [R.id.oxylab_ob_page_btn_next] from the SDK default page layout.
+     */
+    open fun getNextButtonId(): Int = com.oxylab.sdk.startup.R.id.oxylab_ob_page_btn_next
+
+    /** Optional: Theme resource for the loading ad dialog. Default is a Dialog theme. */
+    open fun getLoadingDialogTheme(): Int = com.oxylab.sdk.startup.R.style.OxylabFullScreenDialogTheme
+
     // ── Internal State ──
+
+    private fun getFullScreenAdPosition(): Int {
+        return kotlin.math.min(2, getPageLayouts().size)
+    }
 
     private var isFullScreenAdReady = false
     private var shouldShowCloseButton = false
@@ -88,14 +161,14 @@ abstract class OxylabBaseOnboardingActivity : AppCompatActivity() {
             com.oxylab.sdk.startup.core.OxylabKit.config,
             com.oxylab.sdk.startup.core.OxylabKit.adsManager,
             com.oxylab.sdk.startup.utils.StarterNetworkMonitor(this),
-            com.oxylab.sdk.startup.ads.NativeAdLayoutConfig()
+            com.oxylab.sdk.startup.core.OxylabKit.nativeAdLayoutConfig
         )
         interstitialAdHelper = StarterInterstitialAdHelper(
             this,
             com.oxylab.sdk.startup.core.OxylabKit.config,
             com.oxylab.sdk.startup.ads.DefaultAdTimingProvider(),
             com.oxylab.sdk.startup.core.OxylabKit.adsManager,
-            android.R.style.Theme_DeviceDefault_Light_Dialog_NoActionBar,
+            getLoadingDialogTheme(),
             com.oxylab.sdk.startup.R.layout.dialog_loading_ad
         )
         interstitialAdHelper.loadAd(getInterstitialAdUnitId(), "ONBOARDING_EXIT")
@@ -106,7 +179,7 @@ abstract class OxylabBaseOnboardingActivity : AppCompatActivity() {
 
         onboardingViewPager?.registerOnPageChangeCallback(object : ViewPager2.OnPageChangeCallback() {
             override fun onPageSelected(position: Int) {
-                val isAdPage = position == 2 && isFullScreenAdReady
+                val isAdPage = position == getFullScreenAdPosition() && isFullScreenAdReady
                 handlePageSelected(isAdPage)
             }
         })
@@ -146,7 +219,7 @@ abstract class OxylabBaseOnboardingActivity : AppCompatActivity() {
     private fun updateCloseButtonVisibility() {
         // Need to find the close button in the active view pager child.
         val onboardingViewPager = findViewById<ViewPager2>(getViewPagerId())
-        val child = (onboardingViewPager?.getChildAt(0) as? RecyclerView)?.layoutManager?.findViewByPosition(2)
+        val child = (onboardingViewPager?.getChildAt(0) as? RecyclerView)?.layoutManager?.findViewByPosition(getFullScreenAdPosition())
         val closeAdButton = child?.findViewById<View>(getCloseButtonId())
         closeAdButton?.visibility = if (shouldShowCloseButton) View.VISIBLE else View.GONE
     }
@@ -195,6 +268,7 @@ abstract class OxylabBaseOnboardingActivity : AppCompatActivity() {
         }
     }
 
+
     // ── Internal Helpers ──
 
     private inner class PageViewHolder(view: View) : RecyclerView.ViewHolder(view)
@@ -202,10 +276,11 @@ abstract class OxylabBaseOnboardingActivity : AppCompatActivity() {
     private inner class InternalOnboardingAdapter : RecyclerView.Adapter<PageViewHolder>() {
         
         override fun getItemViewType(position: Int): Int {
-            if (isFullScreenAdReady && position == 2) {
+            val adPosition = getFullScreenAdPosition()
+            if (isFullScreenAdReady && position == adPosition) {
                 return getFullScreenAdPageLayoutResId()
             } else {
-                val originalIndex = if (isFullScreenAdReady && position > 2) position - 1 else position
+                val originalIndex = if (isFullScreenAdReady && position > adPosition) position - 1 else position
                 val layouts = getPageLayouts()
                 return layouts[originalIndex]
             }
@@ -230,15 +305,30 @@ abstract class OxylabBaseOnboardingActivity : AppCompatActivity() {
                     viewPager?.currentItem = (viewPager?.currentItem ?: 0) + 1 
                 }
 
-                val nativeAdContainer = view.findViewById<ViewGroup>(getAdContainerId())
-                if (nativeAdContainer != null && nativeAdContainer.childCount == 0 && preloadedFullScreenAd != null) {
-                    val adView = LayoutInflater.from(view.context).inflate(com.oxylab.sdk.startup.R.layout.native_ad_layout_full, nativeAdContainer, false)
-                    nativeAdHelper.populateNativeAdViewFull(preloadedFullScreenAd!!, adView as NativeAdView)
-                    nativeAdContainer.addView(adView)
+                val nativeAdContainer = view.findViewById<ViewGroup>(getFullScreenAdContainerId())
+                if (nativeAdContainer != null && preloadedFullScreenAd != null) {
+                    if (nativeAdContainer is NativeAdView) {
+                        // App provided its own full NativeAdView
+                        nativeAdHelper.populateNativeAdViewFull(preloadedFullScreenAd!!, nativeAdContainer)
+                        nativeAdContainer.visibility = View.VISIBLE
+                        
+                        // Hide shimmer if it exists (using a common ID convention)
+                        val shimmerLayoutId = view.resources.getIdentifier("shimmerLayout", "id", view.context.packageName)
+                        if (shimmerLayoutId != 0) {
+                            view.findViewById<View>(shimmerLayoutId)?.visibility = View.GONE
+                        }
+                    } else if (nativeAdContainer.childCount == 0) {
+                        // App provided an empty ViewGroup, inject our layout
+                        val adView = LayoutInflater.from(view.context).inflate(com.oxylab.sdk.startup.R.layout.native_ad_layout_full, nativeAdContainer, false)
+                        nativeAdHelper.populateNativeAdViewFull(preloadedFullScreenAd!!, adView as NativeAdView)
+                        nativeAdContainer.addView(adView)
+                        nativeAdContainer.visibility = View.VISIBLE
+                    }
                 }
             } else {
                 // ── NORMAL PAGE ──
-                val originalIndex = if (isFullScreenAdReady && position > 2) position - 1 else position
+                val adPosition = getFullScreenAdPosition()
+                val originalIndex = if (isFullScreenAdReady && position > adPosition) position - 1 else position
                 val layouts = getPageLayouts()
                 
                 val nextPageButton = view.findViewById<View>(getNextButtonId())
@@ -251,16 +341,66 @@ abstract class OxylabBaseOnboardingActivity : AppCompatActivity() {
                 }
 
                 // Request Lazy Ad Load
-                if (viewPager?.currentItem == position) {
-                    val nativeAdContainer = view.findViewById<ViewGroup>(getAdContainerId())
-                    if (nativeAdContainer != null && !pagesWithAdsRequested.contains(position)) {
-                        pagesWithAdsRequested.add(position)
-                        val adId = getNativeAdUnitIdPage(position)
-                        if (adId != null) {
-                            nativeAdHelper.loadNativeAdWithLayout01(adId, nativeAdContainer, "ONBOARDING_PAGE_$position")
+                val nativeAdContainer = view.findViewById<ViewGroup>(getAdContainerId())
+                if (nativeAdContainer != null && !pagesWithAdsRequested.contains(position)) {
+                    pagesWithAdsRequested.add(position)
+                    val adId = getNativeAdUnitIdPage(position)
+                    if (adId != null) {
+                        nativeAdContainer.visibility = View.VISIBLE
+                        nativeAdHelper.loadNativeAdWithLayout01(adId, nativeAdContainer, "ONBOARDING_PAGE_$position")
+                    } else {
+                        // Use INVISIBLE to maintain layout consistency and prevent shifting
+                        nativeAdContainer.visibility = View.GONE
+                    }
+                } else if (nativeAdContainer != null) {
+                    val adId = getNativeAdUnitIdPage(position)
+                    if (adId == null) {
+                        nativeAdContainer.visibility = View.GONE
+                    } else {
+                        nativeAdContainer.visibility = View.VISIBLE
+                    }
+                }
+                
+                // Bind custom text and images if using default layout overrides
+                getOnboardingPageDataList()?.let { dataList ->
+                    if (originalIndex < dataList.size) {
+                        val data = dataList[originalIndex]
+                        view.findViewById<TextView>(com.oxylab.sdk.startup.R.id.oxylab_ob_page_title)?.setText(data.titleResId)
+                        view.findViewById<TextView>(com.oxylab.sdk.startup.R.id.oxylab_ob_page_desc)?.setText(data.descriptionResId)
+                        view.findViewById<android.widget.ImageView>(com.oxylab.sdk.startup.R.id.oxylab_ob_page_image)?.setImageResource(data.imageResId)
+                        
+                        data.buttonTextResId?.let { btnTextId ->
+                            view.findViewById<TextView>(getNextButtonId())?.setText(btnTextId)
+                        }
+                    }
+
+                    // Dynamically rebuild dots
+                    val dotContainer = view.findViewById<ViewGroup>(com.oxylab.sdk.startup.R.id.oxylab_ob_page_dots_container)
+                    if (dotContainer != null) {
+                        dotContainer.removeAllViews()
+                        val density = view.context.resources.displayMetrics.density
+                        for (i in dataList.indices) {
+                            val dot = View(view.context)
+                            val widthDp = if (i == originalIndex) 24 else 8
+                            val marginDp = 4
+                            val params = android.widget.LinearLayout.LayoutParams(
+                                (widthDp * density).toInt(),
+                                (8 * density).toInt()
+                            )
+                            val marginPx = (marginDp * density).toInt()
+                            params.setMargins(marginPx, marginPx, marginPx, marginPx)
+                            dot.layoutParams = params
+                            dot.setBackgroundResource(
+                                if (i == originalIndex) com.oxylab.sdk.startup.R.drawable.oxylab_default_dot_active
+                                else com.oxylab.sdk.startup.R.drawable.oxylab_default_dot_inactive
+                            )
+                            dotContainer.addView(dot)
                         }
                     }
                 }
+                
+                // Custom app binding
+                bindOnboardingPage(view, originalIndex)
             }
         }
 

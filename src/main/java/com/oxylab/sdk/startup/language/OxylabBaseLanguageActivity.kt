@@ -23,44 +23,71 @@ import kotlinx.coroutines.launch
  */
 abstract class OxylabBaseLanguageActivity : AppCompatActivity() {
 
-    // ── Developer Must Provide These ──
-
-    /** Your custom layout XML for the language screen (e.g. R.layout.activity_language) */
-    abstract fun getLayoutResId(): Int
-    
-    /** The ID of your RecyclerView */
-    abstract fun getRecyclerViewId(): Int
-    
-    /** The ID of the Done/Next button (will be hidden automatically for 2 seconds) */
-    abstract fun getDoneButtonId(): Int
-    
-    /** The ID of the FrameLayout where native ads will load */
-    abstract fun getAdContainerId(): Int
-
-    /** The layout for a single language item in the list (e.g. R.layout.item_language) */
-    abstract fun getItemLayoutResId(): Int
+    // ── Required — must be provided by the app ──
 
     /** The Activity to start after the user clicks Done */
     abstract fun getNextActivityClass(): Class<out Activity>
-    
+
     /** Provide the list of languages you want to show */
     abstract fun getLanguages(): List<LanguageItem>
-    
-    /** Ad Unit ID for the first time the screen opens. 
-     * @param isFirstTime True if this is the very first time the user has opened this screen. */
+
+    /** Ad Unit ID for the first time the screen opens. */
     abstract fun getNativeAdUnitIdInitial(isFirstTime: Boolean): String
-    
-    /** Ad Unit ID for when the user taps a language (the refresh ad). 
-     * @param isFirstTime True if this is the very first time the user is selecting a language. */
+
+    /** Ad Unit ID for when the user taps a language (the refresh ad). */
     abstract fun getNativeAdUnitIdSelection(isFirstTime: Boolean): String
 
-    /** 
-     * Bind the data to your custom layout. 
-     * @param view The root view of your inflated item layout.
-     * @param language The language object.
-     * @param isSelected True if this is the currently selected language.
+    // ── Optional Layout Overrides (SDK ships default layouts if you skip these) ──
+
+    /**
+     * Your custom layout XML for the language screen.
+     * Default: SDK built-in [R.layout.default_language].
      */
-    abstract fun bindLanguageItem(view: View, language: LanguageItem, isSelected: Boolean)
+    open fun getLayoutResId(): Int = com.oxylab.sdk.startup.R.layout.default_language
+
+    /**
+     * The ID of your RecyclerView.
+     * Default: [R.id.oxylab_lang_recycler] from the SDK default layout.
+     */
+    open fun getRecyclerViewId(): Int = com.oxylab.sdk.startup.R.id.oxylab_lang_recycler
+
+    /**
+     * The ID of the Done/Next button.
+     * Default: [R.id.oxylab_lang_btn_done] from the SDK default layout.
+     */
+    open fun getDoneButtonId(): Int = com.oxylab.sdk.startup.R.id.oxylab_lang_btn_done
+
+    /**
+     * The ID of the FrameLayout where native ads will load.
+     * Default: [R.id.oxylab_lang_ad_container] from the SDK default layout.
+     */
+    open fun getAdContainerId(): Int = com.oxylab.sdk.startup.R.id.oxylab_lang_ad_container
+
+    /**
+     * The layout for a single language item in the list.
+     * Default: SDK built-in [R.layout.default_language_item].
+     */
+    open fun getItemLayoutResId(): Int = com.oxylab.sdk.startup.R.layout.default_language_item
+
+    /**
+     * Bind language data to a list item view.
+     * Default implementation reads IDs from [R.layout.default_language_item].
+     * Override when you supply your own [getItemLayoutResId].
+     */
+    open fun bindLanguageItem(view: View, language: LanguageItem, isSelected: Boolean) {
+        view.findViewById<android.widget.TextView>(com.oxylab.sdk.startup.R.id.oxylab_lang_item_flag)
+            ?.text = language.flag
+        view.findViewById<android.widget.TextView>(com.oxylab.sdk.startup.R.id.oxylab_lang_item_name)
+            ?.text = language.name
+        view.findViewById<android.widget.TextView>(com.oxylab.sdk.startup.R.id.oxylab_lang_item_native)
+            ?.text = language.nativeName
+        val check = view.findViewById<android.widget.ImageView>(com.oxylab.sdk.startup.R.id.oxylab_lang_item_check)
+        check?.visibility = if (isSelected) View.VISIBLE else View.GONE
+        view.background = if (isSelected)
+            view.context.getDrawable(com.oxylab.sdk.startup.R.drawable.oxylab_default_card_selected_bg)
+        else
+            view.context.getDrawable(com.oxylab.sdk.startup.R.drawable.oxylab_default_card_bg)
+    }
 
     // ── Internal State ──
 
@@ -81,7 +108,7 @@ abstract class OxylabBaseLanguageActivity : AppCompatActivity() {
             com.oxylab.sdk.startup.core.OxylabKit.config,
             com.oxylab.sdk.startup.core.OxylabKit.adsManager,
             com.oxylab.sdk.startup.utils.StarterNetworkMonitor(this),
-            com.oxylab.sdk.startup.ads.NativeAdLayoutConfig()
+            com.oxylab.sdk.startup.core.OxylabKit.nativeAdLayoutConfig
         )
         
         // Load initial selected code from preferences
@@ -161,7 +188,7 @@ abstract class OxylabBaseLanguageActivity : AppCompatActivity() {
         inner class LanguageViewHolder(val view: View) : RecyclerView.ViewHolder(view) {
             init {
                 view.setOnClickListener {
-                    val lang = items[adapterPosition]
+                    val lang = items[bindingAdapterPosition]
                     handleLanguageSelection(lang.code)
                 }
             }

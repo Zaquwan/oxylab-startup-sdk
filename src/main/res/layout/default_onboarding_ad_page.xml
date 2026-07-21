@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  SDK built-in default full-screen ad page for Onboarding.
+  Apps can replace by overriding getFullScreenAdPageLayoutResId().
+  Required IDs: oxylab_ob_ad_page_container (ad slot), oxylab_ob_ad_page_close (close button).
+-->
+<FrameLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/oxylab_default_bg">
+
+    <!-- Full-screen native ad container -->
+    <FrameLayout
+        android:id="@+id/oxylab_ob_ad_page_container"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
+
+    <!-- Close button row (hidden for first 3 seconds by SDK) -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="top"
+        android:gravity="end"
+        android:orientation="horizontal"
+        android:paddingTop="14dp"
+        android:paddingEnd="16dp">
+
+        <FrameLayout
+            android:id="@+id/oxylab_ob_ad_page_close"
+            android:layout_width="36dp"
+            android:layout_height="36dp"
+            android:background="@drawable/oxylab_default_btn_bg"
+            android:visibility="gone">
+
+            <ImageView
+                android:layout_width="18dp"
+                android:layout_height="18dp"
+                android:layout_gravity="center"
+                android:src="@drawable/oxylab_default_close" />
+        </FrameLayout>
+    </LinearLayout>
+
+</FrameLayout>

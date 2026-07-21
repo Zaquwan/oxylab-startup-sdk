@@ -157,6 +157,7 @@ class StarterNativeAdHelper(
 
     // ── Load methods ────────────────────────────────────────────────────
 
+    @JvmOverloads
     fun loadNativeAdWithLayout01(
         adUnitID: String, adContainer: ViewGroup, adVarName: String = "NATIVE",
         onLoaded: (() -> Unit)? = null, onFailed: (() -> Unit)? = null
@@ -209,7 +210,7 @@ class StarterNativeAdHelper(
         }
         adLoader = AdLoader.Builder(context, adUnitID)
             .forNativeAd { nativeAd ->
-                Log.e("xcxcxc", "$adVarName : $adUnitID Shown")
+                Log.d(TAG, "$adVarName : $adUnitID Shown")
                 onLoaded(nativeAd)
             }
             .withAdListener(object : AdListener() {
@@ -255,7 +256,7 @@ class StarterNativeAdHelper(
         showShimmer(adContainer, shimmerLayoutId)
         adLoader = AdLoader.Builder(context, adUnitID)
             .forNativeAd { nativeAd ->
-                Log.e("xcxcxc", "$adVarName : $adUnitID Shown")
+                Log.d(TAG, "$adVarName : $adUnitID Shown")
                 val adView = LayoutInflater.from(context)
                     .inflate(nativeLayoutId, adContainer, false) as NativeAdView
                 populateFn(nativeAd, adView)

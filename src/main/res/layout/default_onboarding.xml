@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  SDK built-in default Onboarding host screen.
+  Contains only the ViewPager2 — same as the minimal pattern apps use.
+  Apps can replace by overriding getLayoutResId() / getViewPagerId().
+-->
+<FrameLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/oxylab_default_bg">
+
+    <androidx.viewpager2.widget.ViewPager2
+        android:id="@+id/oxylab_onboarding_pager"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
+
+</FrameLayout>

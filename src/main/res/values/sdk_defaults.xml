@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Default screen background -->
+    <color name="oxylab_default_bg">#0D0D0F</color>
+    <!-- Accent / primary brand color -->
+    <color name="oxylab_default_accent">#6C63FF</color>
+    <!-- Surface card color -->
+    <color name="oxylab_default_surface">#1A1A1E</color>
+    <!-- Primary text color -->
+    <color name="oxylab_default_text_primary">#FFFFFF</color>
+    <!-- Secondary text color -->
+    <color name="oxylab_default_text_secondary">#B0B0B8</color>
+    <!-- Divider / border color -->
+    <color name="oxylab_default_divider">#2A2A30</color>
+
+    <!-- Strings -->
+    <string name="oxylab_default_app_name">Your App Name</string>
+    <string name="oxylab_default_app_desc">Your App Description Here</string>
+    <string name="oxylab_default_loading">Loading…</string>
+    <string name="oxylab_default_no_internet">No Internet</string>
+    <string name="oxylab_default_no_internet_msg">Please check your connection and try again.</string>
+    <string name="oxylab_default_error">Something went wrong</string>
+    <string name="oxylab_default_retry">Retry</string>
+    <string name="oxylab_default_choose_language">Choose a Language</string>
+    <string name="oxylab_default_continue">Continue</string>
+    <string name="oxylab_default_get_started">Get Started</string>
+    <string name="oxylab_default_onboarding_title_1">Welcome</string>
+    <string name="oxylab_default_onboarding_desc_1">Discover powerful features designed just for you.</string>
+    <string name="oxylab_default_onboarding_title_2">Stay Connected</string>
+    <string name="oxylab_default_onboarding_desc_2">Everything you need, always at your fingertips.</string>
+    <string name="oxylab_default_onboarding_title_3">Customizable</string>
+    <string name="oxylab_default_onboarding_desc_3">Personalize the experience to fit your needs perfectly.</string>
+    <string name="oxylab_default_onboarding_title_4">Let\'s Begin</string>
+    <string name="oxylab_default_onboarding_desc_4">Tap Get Started and enjoy the full experience.</string>
+    <string name="oxylab_default_ad_label">This action may contain ads</string>
+    <string name="oxylab_default_privacy_policy">Privacy Policy</string>
+    <string name="oxylab_default_by_continuing">By continuing you agree to our %1$s</string>
+
+    <!-- Dimensions -->
+    <dimen name="oxylab_default_corner_radius">16dp</dimen>
+    <dimen name="oxylab_default_button_corner_radius">50dp</dimen>
+</resources>

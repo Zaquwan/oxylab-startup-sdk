@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  SDK built-in default language list item.
+  Apps can replace this by overriding getItemLayoutResId() + bindLanguageItem().
+  IDs used here are the defaults that OxylabBaseLanguageActivity.bindDefaultLanguageItem() reads.
+-->
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/oxylab_lang_item_root"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginBottom="8dp"
+    android:background="@drawable/oxylab_default_card_bg"
+    android:gravity="center_vertical"
+    android:orientation="horizontal"
+    android:padding="14dp">
+
+    <!-- Emoji / flag label -->
+    <TextView
+        android:id="@+id/oxylab_lang_item_flag"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:gravity="center"
+        android:textSize="24sp" />
+
+    <!-- Name + native name -->
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="12dp"
+        android:layout_weight="1"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/oxylab_lang_item_name"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="@color/oxylab_default_text_primary"
+            android:textSize="15sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/oxylab_lang_item_native"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="2dp"
+            android:textColor="@color/oxylab_default_text_secondary"
+            android:textSize="13sp" />
+    </LinearLayout>
+
+    <!-- Selection checkmark (gone when not selected) -->
+    <ImageView
+        android:id="@+id/oxylab_lang_item_check"
+        android:layout_width="22dp"
+        android:layout_height="22dp"
+        android:src="@drawable/oxylab_default_check_circle"
+        app:tint="@color/oxylab_default_accent"
+        android:visibility="gone" />
+
+</LinearLayout>

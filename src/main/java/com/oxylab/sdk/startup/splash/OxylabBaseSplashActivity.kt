@@ -34,37 +34,74 @@ import kotlinx.coroutines.withTimeout
  */
 abstract class OxylabBaseSplashActivity : AppCompatActivity() {
 
-    // ── Developer Must Provide These ──
-
-    /** Your custom layout XML for the splash screen (e.g. R.layout.activity_splash) */
-    abstract fun getLayoutResId(): Int
-    
-    /** The ID of the FrameLayout where native ads will load (e.g. R.id.adContainer) */
-    abstract fun getAdContainerId(): Int
-    
-    /** The ID of the parent layout wrapping your error/loading views (e.g. R.id.layoutError) */
-    abstract fun getErrorLayoutId(): Int
-    
-    /** The ID of your title TextView in the error layout */
-    abstract fun getTitleTextViewId(): Int
-    
-    /** The ID of your message TextView in the error layout */
-    abstract fun getMessageTextViewId(): Int
-    
-    /** The ID of your ProgressBar in the error layout */
-    abstract fun getProgressBarId(): Int
-    
-    /** The ID of your Retry Button in the error layout */
-    abstract fun getRetryButtonId(): Int
+    // ── Required — must be provided by the app ──
 
     /** The Activity to start after the splash screen finishes */
     abstract fun getNextActivityClass(): Class<out Activity>
 
     /** Your AdMob Native Ad Unit ID for the splash screen */
     abstract fun getNativeAdUnitId(): String
-    
+
     /** Your AdMob Interstitial Ad Unit ID for the splash screen */
     abstract fun getInterstitialAdUnitId(): String
+
+    // ── Optional Layout Overrides (SDK ships default layouts if you skip these) ──
+
+    /**
+     * Your custom layout XML for the splash screen.
+     * Default: SDK built-in [R.layout.default_splash].
+     */
+    open fun getLayoutResId(): Int = com.oxylab.sdk.startup.R.layout.default_splash
+
+    /**
+     * The ID of the FrameLayout where native ads will load.
+     * Default: [R.id.oxylab_splash_ad_container] from the SDK default layout.
+     */
+    open fun getAdContainerId(): Int = com.oxylab.sdk.startup.R.id.oxylab_splash_ad_container
+
+    /**
+     * The ID of the parent layout wrapping your error/loading views.
+     * Default: [R.id.oxylab_splash_layout_error] from the SDK default layout.
+     */
+    open fun getErrorLayoutId(): Int = com.oxylab.sdk.startup.R.id.oxylab_splash_layout_error
+
+    /**
+     * The ID of your title TextView in the error layout.
+     * Default: [R.id.oxylab_splash_tv_title] from the SDK default layout.
+     */
+    open fun getTitleTextViewId(): Int = com.oxylab.sdk.startup.R.id.oxylab_splash_tv_title
+
+    /**
+     * The ID of your message TextView in the error layout.
+     * Default: [R.id.oxylab_splash_tv_message] from the SDK default layout.
+     */
+    open fun getMessageTextViewId(): Int = com.oxylab.sdk.startup.R.id.oxylab_splash_tv_message
+
+    /**
+     * The ID of your main loading indicator (ProgressBar or LottieAnimationView).
+     * Default: [R.id.oxylab_splash_lottie] from the SDK default layout.
+     */
+    open fun getProgressBarId(): Int = com.oxylab.sdk.startup.R.id.oxylab_splash_lottie
+
+    /**
+     * The ID of your Retry Button in the error layout.
+     * Default: [R.id.oxylab_splash_btn_retry] from the SDK default layout.
+     */
+    open fun getRetryButtonId(): Int = com.oxylab.sdk.startup.R.id.oxylab_splash_btn_retry
+
+    // ── Optional Overrides for Default Layout ──
+
+    /** Optional: Override to provide a custom App Name String resource for the default layout */
+    open fun getAppNameStringResId(): Int? = null
+
+    /** Optional: Override to provide a custom App Description/Message String resource for the default layout */
+    open fun getAppDescStringResId(): Int? = null
+
+    /** Optional: Override to provide a custom Logo Drawable resource for the default layout */
+    open fun getAppLogoResId(): Int? = null
+
+    /** Optional: Override to provide a custom Lottie Raw resource for the default layout loading animation */
+    open fun getLottieAnimationResId(): Int? = null
 
     // ── Optional Overrides ──
 
@@ -82,6 +119,12 @@ abstract class OxylabBaseSplashActivity : AppCompatActivity() {
     
     /** Whether to force Dark Mode. Default true. */
     open fun isDarkModeEnabled(): Boolean = true
+
+    /** Optional: Whether Firebase Anonymous Auth is strictly required. Default is true. */
+    open fun isFirebaseAuthRequired(): Boolean = true
+
+    /** Optional: Theme resource for the loading ad dialog. Default is a Dialog theme. */
+    open fun getLoadingDialogTheme(): Int = com.oxylab.sdk.startup.R.style.OxylabFullScreenDialogTheme
 
     // ── Internal State ──
 
@@ -102,6 +145,26 @@ abstract class OxylabBaseSplashActivity : AppCompatActivity() {
 
         setContentView(getLayoutResId())
 
+        // Apply custom default layout overrides if they exist and views are present
+        findViewById<android.widget.ImageView>(com.oxylab.sdk.startup.R.id.oxylab_splash_app_logo)?.let { logoView ->
+            getAppLogoResId()?.let { logoView.setImageResource(it) }
+        }
+        findViewById<TextView>(com.oxylab.sdk.startup.R.id.oxylab_splash_app_name)?.let { nameView ->
+            getAppNameStringResId()?.let { nameView.setText(it) }
+        }
+        findViewById<TextView>(com.oxylab.sdk.startup.R.id.oxylab_splash_app_desc)?.let { descView ->
+            getAppDescStringResId()?.let { descView.setText(it) }
+        }
+        findViewById<com.airbnb.lottie.LottieAnimationView>(com.oxylab.sdk.startup.R.id.oxylab_splash_lottie)?.let { lottieView ->
+            getLottieAnimationResId()?.let { lottieView.setAnimation(it) }
+        }
+
+        // Ensure Lottie animation starts playing if the progress bar is a Lottie view
+        val progressBar = findViewById<View>(getProgressBarId())
+        if (progressBar is com.airbnb.lottie.LottieAnimationView) {
+            progressBar.playAnimation()
+        }
+
         findViewById<View>(getRetryButtonId())?.setOnClickListener {
             signInAnonymously()
         }
@@ -114,29 +177,12 @@ abstract class OxylabBaseSplashActivity : AppCompatActivity() {
         
         nativeAdHelper = StarterNativeAdHelper(
             this, configProvider, adsManager, networkMonitor,
-            NativeAdLayoutConfig(
-                nativeLayout01 = com.oxylab.sdk.startup.R.layout.native_ad_layout_01,
-                nativeLayout02 = com.oxylab.sdk.startup.R.layout.native_ad_layout_02,
-                nativeLayout03 = com.oxylab.sdk.startup.R.layout.native_ad_layout_03,
-                nativeLayout04 = com.oxylab.sdk.startup.R.layout.native_ad_layout_04,
-                nativeLayoutFull = com.oxylab.sdk.startup.R.layout.native_ad_layout_full,
-                shimmer01 = com.oxylab.sdk.startup.R.layout.shimmer_native_ad_01,
-                shimmer02 = com.oxylab.sdk.startup.R.layout.shimmer_native_ad_02,
-                shimmer03 = com.oxylab.sdk.startup.R.layout.shimmer_native_ad_03,
-                shimmer04 = com.oxylab.sdk.startup.R.layout.shimmer_native_ad_04,
-                shimmerContainerId = com.oxylab.sdk.startup.R.id.shimmer_view_container,
-                headlineId = com.oxylab.sdk.startup.R.id.native_ad_headline,
-                mediaViewId = com.oxylab.sdk.startup.R.id.native_ad_media_view,
-                bodyId = com.oxylab.sdk.startup.R.id.native_ad_body,
-                callToActionId = com.oxylab.sdk.startup.R.id.native_ad_call_to_action,
-                iconId = com.oxylab.sdk.startup.R.id.native_ad_icon,
-                adChoicesId = com.oxylab.sdk.startup.R.id.native_ad_choice_view,
-            )
+            com.oxylab.sdk.startup.core.OxylabKit.nativeAdLayoutConfig
         )
         
         interstitialAdHelper = StarterInterstitialAdHelper(
             this, configProvider, InternalAdTiming(), adsManager,
-            android.R.style.Theme_DeviceDefault_Light_Dialog_NoActionBar_MinWidth,
+            getLoadingDialogTheme(),
             com.oxylab.sdk.startup.R.layout.dialog_loading_ad
         )
 
@@ -152,6 +198,11 @@ abstract class OxylabBaseSplashActivity : AppCompatActivity() {
     }
 
     private fun signInAnonymously() {
+        if (!isFirebaseAuthRequired()) {
+            authState.value = AuthStatus.Authenticated
+            return
+        }
+
         val auth = FirebaseAuth.getInstance()
         if (auth.currentUser != null) {
             authState.value = AuthStatus.Authenticated
@@ -268,6 +319,7 @@ abstract class OxylabBaseSplashActivity : AppCompatActivity() {
 
     private fun hideOverlay() {
         findViewById<View>(getErrorLayoutId())?.visibility = View.GONE
+        findViewById<View>(getProgressBarId())?.visibility = View.VISIBLE
     }
 
     // ── Internal Classes ──
@@ -284,6 +336,8 @@ abstract class OxylabBaseSplashActivity : AppCompatActivity() {
         override fun isInterstitialEnabled() = OxylabKit.config.isInterstitialEnabled()
         override fun isNativeEnabled() = OxylabKit.config.isNativeEnabled()
         override fun isBannerEnabled() = OxylabKit.config.isBannerEnabled()
+        override fun isAppOpenEnabled() = OxylabKit.config.isAppOpenEnabled()
+        override fun isRewardedEnabled() = OxylabKit.config.isRewardedEnabled()
         override fun isAdEnabled(adVarName: String) = true
         override fun getInterstitialInterval() = OxylabKit.config.getInterstitialInterval()
     }

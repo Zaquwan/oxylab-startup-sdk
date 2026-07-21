@@ -1,12 +1,10 @@
 plugins {
-    id("com.android.library") version "8.5.2"
-    id("org.jetbrains.kotlin.android") version "2.1.0"
-    id("maven-publish")
+    id("com.android.library")
 }
 
 android {
     namespace = "com.oxylab.sdk.startup"
-    compileSdk = 34
+    compileSdk = 36
 
     defaultConfig {
         minSdk = 24
@@ -28,9 +26,6 @@ android {
         sourceCompatibility = JavaVersion.VERSION_1_8
         targetCompatibility = JavaVersion.VERSION_1_8
     }
-    kotlinOptions {
-        jvmTarget = "1.8"
-    }
 }
 
 dependencies {
@@ -39,6 +34,7 @@ dependencies {
     implementation("com.google.android.material:material:1.11.0")
     
     // ViewPager2 and RecyclerView for SDK features
+    implementation("androidx.lifecycle:lifecycle-process:2.7.0")
     implementation("androidx.viewpager2:viewpager2:1.0.0")
     implementation("androidx.recyclerview:recyclerview:1.3.2")
     
@@ -55,17 +51,18 @@ dependencies {
     // Coroutines
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-play-services:1.7.3")
+    
+    // Lottie
+    implementation("com.airbnb.android:lottie:6.7.1")
 }
 
-afterEvaluate {
-    publishing {
-        publications {
-            create<MavenPublication>("release") {
-                from(components["release"])
-                groupId = "com.github.Zaquwan"
-                artifactId = "oxylab-startup-sdk"
-                version = "1.0.4"
-            }
-        }
-    }
+// ── JitPack distribution metadata ──────────────────────────────────────────
+// JitPack calls :bundleReleaseAar directly — no maven-publish plugin needed.
+// group and version are all JitPack requires at the root level.
+group = "com.github.Zaquwan"
+version = "1.2.0"
+
+kotlin {
+    jvmToolchain(17)
 }
+

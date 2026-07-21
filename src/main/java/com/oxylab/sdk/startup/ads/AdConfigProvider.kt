@@ -14,6 +14,10 @@ interface AdConfigProvider {
     fun isNativeEnabled(): Boolean
     /** Whether banner ads are enabled globally. */
     fun isBannerEnabled(): Boolean
+    /** Whether app open ads are enabled globally. */
+    fun isAppOpenEnabled(): Boolean
+    /** Whether rewarded ads are enabled globally. */
+    fun isRewardedEnabled(): Boolean
     /** Whether a specific ad placement is enabled by its variable name. */
     fun isAdEnabled(adVarName: String): Boolean
     /** Interval in ms between two interstitial ads. */

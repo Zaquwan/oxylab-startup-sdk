@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/oxylab_default_bg">
+
+    <!-- Center Logo -->
+    <ImageView
+        android:id="@+id/oxylab_splash_app_logo"
+        android:layout_width="100dp"
+        android:layout_height="100dp"
+        android:src="@drawable/oxylab_default_demo_logo"
+        app:layout_constraintBottom_toTopOf="@id/oxylab_splash_app_name"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_chainStyle="packed" />
+
+    <TextView
+        android:id="@+id/oxylab_splash_app_name"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
+        android:layout_marginStart="15dp"
+        android:layout_marginEnd="15dp"
+        android:text="@string/oxylab_default_app_name"
+        android:textAlignment="center"
+        android:textColor="@color/oxylab_default_text_primary"
+        android:textSize="24sp"
+        android:textStyle="bold"
+        app:layout_constraintBottom_toTopOf="@id/oxylab_splash_app_desc"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/oxylab_splash_app_logo" />
+
+    <!-- App description / message (Optional extension) -->
+    <TextView
+        android:id="@+id/oxylab_splash_app_desc"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:layout_marginStart="15dp"
+        android:layout_marginEnd="15dp"
+        android:text="@string/oxylab_default_app_desc"
+        android:textAlignment="center"
+        android:textColor="@color/oxylab_default_text_secondary"
+        android:textSize="14sp"
+        app:layout_constraintBottom_toTopOf="@id/oxylab_splash_ad_container"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/oxylab_splash_app_name" />
+
+    <!-- Error Layout (Hidden by default) -->
+    <LinearLayout
+        android:id="@+id/oxylab_splash_layout_error"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:layout_marginStart="15dp"
+        android:layout_marginEnd="15dp"
+        android:gravity="center"
+        android:orientation="vertical"
+        android:visibility="gone"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/oxylab_splash_app_desc">
+
+        <TextView
+            android:id="@+id/oxylab_splash_tv_title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/oxylab_default_no_internet"
+            android:textColor="@color/oxylab_default_text_primary"
+            android:textSize="18sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/oxylab_splash_tv_message"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/oxylab_default_no_internet_msg"
+            android:textColor="@color/oxylab_default_text_primary" />
+
+        <Button
+            android:id="@+id/oxylab_splash_btn_retry"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:backgroundTint="@color/oxylab_default_accent"
+            android:text="@string/oxylab_default_retry"
+            android:textColor="@color/oxylab_default_text_primary" />
+    </LinearLayout>
+
+    <com.airbnb.lottie.LottieAnimationView
+        android:id="@+id/oxylab_splash_lottie"
+        android:layout_width="0dp"
+        android:layout_height="80dp"
+        android:scaleType="centerCrop"
+        android:layout_marginBottom="20dp"
+        android:layout_marginStart="15dp"
+        android:layout_marginEnd="15dp"
+        app:layout_constraintBottom_toTopOf="@id/oxylab_splash_ad_label"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/oxylab_splash_layout_error"
+        app:lottie_autoPlay="true"
+        app:lottie_loop="true"
+        app:lottie_rawRes="@raw/loading" />
+
+    <TextView
+        android:id="@+id/oxylab_splash_ad_label"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/oxylab_default_ad_label"
+        android:textColor="@color/oxylab_default_text_primary"
+        android:textSize="14sp"
+        android:layout_marginBottom="20dp"
+        android:layout_marginStart="15dp"
+        android:layout_marginEnd="15dp"
+        app:layout_constraintBottom_toTopOf="@id/oxylab_splash_ad_container"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/oxylab_splash_lottie" />
+
+    <FrameLayout
+        android:id="@+id/oxylab_splash_ad_container"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:minHeight="100dp"
+        app:layout_constraintBottom_toBottomOf="parent" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

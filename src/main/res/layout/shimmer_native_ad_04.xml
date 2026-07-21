@@ -4,6 +4,7 @@
     android:id="@+id/shimmer_view_container"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
+    android:paddingTop="10dp"
     app:shimmer_duration="800">
 
     <androidx.cardview.widget.CardView
@@ -15,8 +16,7 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:paddingTop="10dp">
+            android:orientation="vertical">
 
             <!-- Ad choices/tag header placeholder -->
             <RelativeLayout
@@ -59,13 +59,13 @@
                             android:layout_width="50dp"
                             android:layout_height="50dp"
                             android:layout_marginEnd="5dp"
-                            android:background="#DDDDDD" />
+                            android:background="@drawable/starter_shimmer_bg" />
 
                         <View
                             android:layout_width="match_parent"
                             android:layout_height="14dp"
                             android:layout_marginTop="5dp"
-                            android:background="#DDDDDD" />
+                            android:background="@drawable/starter_shimmer_bg" />
 
                     </LinearLayout>
 
@@ -80,14 +80,14 @@
                             android:layout_width="match_parent"
                             android:layout_height="12dp"
                             android:layout_marginEnd="20dp"
-                            android:background="#DDDDDD" />
+                            android:background="@drawable/starter_shimmer_bg" />
 
                         <View
                             android:layout_width="match_parent"
                             android:layout_height="12dp"
                             android:layout_marginTop="4dp"
                             android:layout_marginEnd="40dp"
-                            android:background="#DDDDDD" />
+                            android:background="@drawable/starter_shimmer_bg" />
 
                     </LinearLayout>
                 </LinearLayout>
@@ -115,7 +115,7 @@
                                 android:layout_marginStart="0dp"
                                 android:layout_marginTop="5dp"
                                 android:layout_marginEnd="0dp"
-                                android:background="#DDDDDD"
+                                android:background="@drawable/starter_shimmer_bg"
                                 app:layout_constraintDimensionRatio="H,16:9"
                                 app:layout_constraintEnd_toEndOf="parent"
                                 app:layout_constraintStart_toStartOf="parent"
@@ -134,7 +134,7 @@
                 android:layout_marginStart="20dp"
                 android:layout_marginEnd="20dp"
                 android:layout_marginBottom="10dp"
-                android:background="#DDDDDD" />
+                android:background="@drawable/starter_shimmer_bg" />
 
         </LinearLayout>
     </androidx.cardview.widget.CardView>
