@@ -18,6 +18,9 @@ import com.oxylab.sdk.startup.ads.NativeAdLayoutConfig
 import com.oxylab.sdk.startup.ads.StarterAdsManager
 import com.oxylab.sdk.startup.ads.StarterInterstitialAdHelper
 import com.oxylab.sdk.startup.ads.StarterNativeAdHelper
+import com.oxylab.sdk.startup.ads.StarterBannerAdHelper
+import android.widget.FrameLayout
+import com.google.android.gms.ads.AdView
 import com.oxylab.sdk.startup.core.OxylabKit
 import com.oxylab.sdk.startup.utils.StarterNetworkMonitor
 import kotlinx.coroutines.delay
@@ -44,6 +47,14 @@ abstract class OxylabBaseSplashActivity : AppCompatActivity() {
 
     /** Your AdMob Interstitial Ad Unit ID for the splash screen */
     abstract fun getInterstitialAdUnitId(): String
+
+    enum class SplashAdType { NATIVE, BANNER, NONE }
+
+    /** Choose which ad type to show on the splash screen. Default is NATIVE. */
+    open fun getSplashAdType(): SplashAdType = SplashAdType.NATIVE
+
+    /** Your AdMob Banner Ad Unit ID for the splash screen. Only used if getSplashAdType() is BANNER. */
+    open fun getBannerAdUnitId(): String = ""
 
     // ── Optional Layout Overrides (SDK ships default layouts if you skip these) ──
 
@@ -131,6 +142,7 @@ abstract class OxylabBaseSplashActivity : AppCompatActivity() {
     private val authState = MutableStateFlow<AuthStatus>(AuthStatus.Loading)
     private lateinit var networkMonitor: StarterNetworkMonitor
     private lateinit var nativeAdHelper: StarterNativeAdHelper
+    private lateinit var bannerAdHelper: StarterBannerAdHelper
     private lateinit var interstitialAdHelper: StarterInterstitialAdHelper
     private var isProceeding = false
 
@@ -180,6 +192,8 @@ abstract class OxylabBaseSplashActivity : AppCompatActivity() {
             com.oxylab.sdk.startup.core.OxylabKit.nativeAdLayoutConfig
         )
         
+        bannerAdHelper = StarterBannerAdHelper(configProvider, networkMonitor)
+        
         interstitialAdHelper = StarterInterstitialAdHelper(
             this, configProvider, InternalAdTiming(), adsManager,
             getLoadingDialogTheme(),
@@ -188,7 +202,7 @@ abstract class OxylabBaseSplashActivity : AppCompatActivity() {
 
         val adContainer = findViewById<ViewGroup>(getAdContainerId())
         if (adContainer != null) {
-            nativeAdHelper.loadNativeAdWithLayout04(getNativeAdUnitId(), adContainer, "NATIVE_SPLASH")
+            loadSplashAd(adContainer as? FrameLayout)
         }
         interstitialAdHelper.loadAd(getInterstitialAdUnitId(), "INTER_SPLASH")
 
@@ -256,7 +270,7 @@ abstract class OxylabBaseSplashActivity : AppCompatActivity() {
                         
                         val adContainer = findViewById<ViewGroup>(getAdContainerId())
                         if (adContainer != null) {
-                            nativeAdHelper.loadNativeAdWithLayout04(getNativeAdUnitId(), adContainer, "NATIVE_SPLASH")
+                            loadSplashAd(adContainer as? FrameLayout)
                         }
                         interstitialAdHelper.loadAd(getInterstitialAdUnitId(), "INTER_SPLASH")
                     }
@@ -265,10 +279,14 @@ abstract class OxylabBaseSplashActivity : AppCompatActivity() {
                 val isAuthenticated = authState.value is AuthStatus.Authenticated
                 if (isAuthenticated) {
                     val adContainer = findViewById<ViewGroup>(getAdContainerId())
-                    val isNativeShown = adContainer != null && adContainer.childCount > 0 && adContainer.getChildAt(0) is NativeAdView
+                    val isAdReady = when (getSplashAdType()) {
+                        SplashAdType.NATIVE -> adContainer != null && adContainer.childCount > 0 && adContainer.getChildAt(0) is NativeAdView
+                        SplashAdType.BANNER -> adContainer != null && adContainer.childCount > 0 && adContainer.getChildAt(0) is AdView
+                        SplashAdType.NONE -> true
+                    }
                     val isInterLoaded = interstitialAdHelper.isAdLoaded()
 
-                    if (isNativeShown && isInterLoaded) {
+                    if (isAdReady && isInterLoaded) {
                         break
                     }
                 }
@@ -277,6 +295,24 @@ abstract class OxylabBaseSplashActivity : AppCompatActivity() {
                 elapsed = System.currentTimeMillis() - startTime
             }
             proceedToApp()
+        }
+    }
+
+    private fun loadSplashAd(adContainer: FrameLayout?) {
+        if (adContainer == null) return
+        when (getSplashAdType()) {
+            SplashAdType.NATIVE -> {
+                nativeAdHelper.loadNativeAdWithLayout04(getNativeAdUnitId(), adContainer, "NATIVE_SPLASH")
+            }
+            SplashAdType.BANNER -> {
+                val bannerId = getBannerAdUnitId()
+                if (bannerId.isNotEmpty()) {
+                    bannerAdHelper.showBanner(this, adContainer, bannerId)
+                }
+            }
+            SplashAdType.NONE -> {
+                // Do nothing
+            }
         }
     }
 

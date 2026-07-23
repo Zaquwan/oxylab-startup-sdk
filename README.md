@@ -107,6 +107,10 @@ class SplashActivity : OxylabBaseSplashActivity() {
     override fun getNextActivityClass()     = LanguageActivity::class.java
     override fun getNativeAdUnitId()        = "ca-app-pub-XXX/YYY"
     override fun getInterstitialAdUnitId()  = "ca-app-pub-XXX/ZZZ"
+    
+    // Optional: Use a Banner ad instead of Native ad
+    // override fun getSplashAdType()       = SplashAdType.BANNER
+    // override fun getBannerAdUnitId()     = "ca-app-pub-XXX/BANNER"
 }
 ```
 
@@ -170,6 +174,8 @@ class SplashActivity : OxylabBaseSplashActivity() {
 | `getNextActivityClass()` | ✅ Yes | — |
 | `getNativeAdUnitId()` | ✅ Yes | — |
 | `getInterstitialAdUnitId()` | ✅ Yes | — |
+| `getSplashAdType()` | ⬜ Optional | `SplashAdType.NATIVE` |
+| `getBannerAdUnitId()` | ⬜ Optional | `""` |
 | `getAppNameStringResId()` | ⬜ Optional | `null` |
 | `getAppDescStringResId()` | ⬜ Optional | `null` |
 | `getAppLogoResId()` | ⬜ Optional | `null` |

@@ -22,6 +22,44 @@ class StarterBannerAdHelper(
         const val TAG = "StarterBannerAdHelper"
     }
 
+    fun showBanner(activity: Activity, container: FrameLayout, adUnitID: String, onAdLoaded: (() -> Unit)? = null) {
+        if (!networkMonitor.isCurrentlyOnline() || !configProvider.isGlobalAdsEnabled() || !configProvider.isBannerEnabled()) {
+            return
+        }
+
+        if (container.visibility == View.VISIBLE && container.childCount > 0) return
+
+        val adView = AdView(activity)
+        adView.adUnitId = adUnitID
+        
+        val displayMetrics = activity.resources.displayMetrics
+        val widthPixels = displayMetrics.widthPixels
+        val density = displayMetrics.density
+        val adWidth = (widthPixels / density).toInt()
+        val adSize = AdSize.getCurrentOrientationAnchoredAdaptiveBannerAdSize(activity, adWidth)
+        adView.setAdSize(adSize)
+
+        adView.adListener = object : AdListener() {
+            override fun onAdLoaded() {
+                Log.d(TAG, "Banner loaded successfully.")
+                activity.runOnUiThread {
+                    container.removeAllViews()
+                    container.addView(adView)
+                    container.visibility = View.VISIBLE
+                    onAdLoaded?.invoke()
+                }
+            }
+
+            override fun onAdFailedToLoad(error: LoadAdError) {
+                Log.e(TAG, "Banner failed to load: ${error.message}")
+                adView.destroy()
+            }
+        }
+
+        val adRequest = AdRequest.Builder().build()
+        adView.loadAd(adRequest)
+    }
+
     fun showCollapsibleBanner(activity: Activity, container: FrameLayout, adUnitID: String) {
         if (!networkMonitor.isCurrentlyOnline() || !configProvider.isGlobalAdsEnabled() || !configProvider.isBannerEnabled()) {
             return
