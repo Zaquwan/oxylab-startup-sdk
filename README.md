@@ -478,7 +478,64 @@ class SplashActivity : OxylabBaseSplashActivity() {
 
 ---
 
-## 🛠️ 7. Bundled Resource Reference
+## 🎯 7. Custom Ad Placements (Manual Integration)
+
+The SDK makes it extremely easy to load and show ads anywhere in your app using the built-in wrappers.
+
+### Banner Ads
+```kotlin
+// Show a banner ad inside any FrameLayout/LinearLayout
+OxylabKit.bannerAdHelper.showBanner(
+    activity = this, 
+    adContainer = binding.myBannerContainer, 
+    adUnitId = "ca-app-pub-XXX/BANNER"
+)
+```
+
+### Rewarded Ads
+```kotlin
+// 1. Load the ad beforehand
+OxylabKit.rewardedAdHelper.loadAd("ca-app-pub-XXX/REWARDED")
+
+// 2. Show the ad when requested
+OxylabKit.rewardedAdHelper.showAd(this) { rewardItem ->
+    if (rewardItem != null) {
+        // User earned the reward! Grant them coins/points.
+    }
+}
+```
+
+### App Open Ads
+```kotlin
+OxylabKit.appOpenAdHelper.showAdIfAvailable("ca-app-pub-XXX/APP_OPEN") {
+    // Called when the ad is dismissed or if no ad was available
+}
+```
+
+### Interstitial Ads (with Global Cooldown)
+You can instantiate the `StarterInterstitialAdHelper` in any Activity. It automatically handles the global cooldown timer and loading dialog for you.
+```kotlin
+val interstitialHelper = StarterInterstitialAdHelper(
+    activity = this,
+    configProvider = OxylabKit.config,
+    timingProvider = DefaultAdTimingProvider(this), // or your custom provider
+    adsManager = OxylabKit.adsManager,
+    dialogStyleResId = R.style.AdLoadingDialogTheme, // built-in or custom style
+    dialogLayoutResId = R.layout.dialog_loading_ad   // built-in or custom layout
+)
+
+interstitialHelper.loadAd("ca-app-pub-XXX/INTER", "CUSTOM_INTER")
+
+// Automatically checks cooldown before showing
+interstitialHelper.showAd(bypassCooldown = false) {
+    // Executed after ad is dismissed or failed
+    moveToNextScreen()
+}
+```
+
+---
+
+## 🛠️ 8. Bundled Resource Reference
 
 All SDK resources are accessible via `com.oxylab.sdk.startup.R.*`.
 
