@@ -22,8 +22,9 @@ class StarterBannerAdHelper(
         const val TAG = "StarterBannerAdHelper"
     }
 
-    fun showBanner(activity: Activity, container: FrameLayout, adUnitID: String, onAdLoaded: (() -> Unit)? = null) {
-        if (!networkMonitor.isCurrentlyOnline() || !configProvider.isGlobalAdsEnabled() || !configProvider.isBannerEnabled()) {
+    @JvmOverloads
+    fun showBanner(activity: Activity, container: FrameLayout, adUnitID: String, adVarName: String = "BANNER", onAdLoaded: (() -> Unit)? = null) {
+        if (!networkMonitor.isCurrentlyOnline() || !configProvider.isGlobalAdsEnabled() || !configProvider.isBannerEnabled() || !configProvider.isAdEnabled(adVarName)) {
             return
         }
 
@@ -41,7 +42,7 @@ class StarterBannerAdHelper(
 
         adView.adListener = object : AdListener() {
             override fun onAdLoaded() {
-                Log.d(TAG, "Banner loaded successfully.")
+                Log.d(TAG, "Banner loaded successfully ($adVarName).")
                 activity.runOnUiThread {
                     container.removeAllViews()
                     container.addView(adView)
@@ -51,7 +52,7 @@ class StarterBannerAdHelper(
             }
 
             override fun onAdFailedToLoad(error: LoadAdError) {
-                Log.e(TAG, "Banner failed to load: ${error.message}")
+                Log.e(TAG, "Banner failed to load ($adVarName): ${error.message}")
                 adView.destroy()
             }
         }
@@ -60,8 +61,9 @@ class StarterBannerAdHelper(
         adView.loadAd(adRequest)
     }
 
-    fun showCollapsibleBanner(activity: Activity, container: FrameLayout, adUnitID: String) {
-        if (!networkMonitor.isCurrentlyOnline() || !configProvider.isGlobalAdsEnabled() || !configProvider.isBannerEnabled()) {
+    @JvmOverloads
+    fun showCollapsibleBanner(activity: Activity, container: FrameLayout, adUnitID: String, adVarName: String = "BANNER") {
+        if (!networkMonitor.isCurrentlyOnline() || !configProvider.isGlobalAdsEnabled() || !configProvider.isBannerEnabled() || !configProvider.isAdEnabled(adVarName)) {
             return
         }
 
@@ -133,5 +135,17 @@ class StarterBannerAdHelper(
             .addNetworkExtrasBundle(com.google.ads.mediation.admob.AdMobAdapter::class.java, extras)
             .build()
         adView.loadAd(adRequest)
+    }
+
+    /** Safely destroys any active AdView inside the given container and clears views. */
+    fun destroyBanner(container: FrameLayout) {
+        for (i in 0 until container.childCount) {
+            val child = container.getChildAt(i)
+            if (child is AdView) {
+                child.destroy()
+            }
+        }
+        container.removeAllViews()
+        container.visibility = View.GONE
     }
 }

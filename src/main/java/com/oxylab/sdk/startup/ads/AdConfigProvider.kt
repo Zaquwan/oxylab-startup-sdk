@@ -25,4 +25,7 @@ interface AdConfigProvider {
 
     /** Whether to bypass the global cooldown for a specific ad placement. */
     fun isInterstitialCooldownBypassed(adVarName: String): Boolean = false
+
+    /** Whether debug logs are enabled for the Oxylab SDK. Defaults to false. */
+    fun isDebugLoggingEnabled(): Boolean = false
 }

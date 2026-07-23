@@ -58,27 +58,40 @@ class MyApplication : Application() {
             )
         )
 
-        // Option B: Dynamic values from Firebase Remote Config
-        /*
+        // Option B: Dynamic values from Firebase Remote Config (Single-fetch session caching)
+        val firebaseConfig = FirebaseOxylabConfig(
+            remoteConfig = FirebaseRemoteConfig.getInstance(),
+            defaultEnabled = true,
+            defaultIntervalMs = 40_000L
+        )
+
+        // Fetch once during SDK init; values are cached in memory for the session
+        firebaseConfig.fetchAndActivate()
+
         OxylabKit.initialize(
             context = this,
-            sdkConfig = object : OxylabConfig {
-                override fun isGlobalAdsEnabled()    = remoteConfig.getBoolean("ads_enabled")
-                override fun isInterstitialEnabled() = remoteConfig.getBoolean("interstitial_enabled")
-                override fun isNativeEnabled()       = remoteConfig.getBoolean("native_enabled")
-                override fun isBannerEnabled()       = remoteConfig.getBoolean("banner_enabled")
-                override fun getInterstitialInterval() = remoteConfig.getLong("interstitial_interval_ms")
-                
-                // Optional: Bypass the cooldown for specific placements
-                override fun isInterstitialCooldownBypassed(adVarName: String): Boolean {
-                    return adVarName == "URGENT_PROMO" || remoteConfig.getBoolean("bypass_cooldown_$adVarName")
-                }
-            }
+            sdkConfig = firebaseConfig
         )
-        */
     }
 }
 ```
+
+### 🎛️ Firebase Remote Config Dashboard Setup
+
+Enable or disable **every ad unit** in your app via Firebase Console using the exact placement variable name (`adVarName`) as the parameter key:
+
+| Remote Config Key | Expected Value | Behavior |
+|---|---|---|
+| `"1"` | String | **Ad Unit Enabled** |
+| `"0"` | String | **Ad Unit Disabled** |
+| `adVarName` (e.g. `inter_splash`, `native_home`, `banner_main`) | `"1"` or `"0"` | Enable/disable specific ad unit placement |
+| `global_ads` | `"1"` or `"0"` | Master global switch for all ads |
+| `interstitial_ads` | `"1"` or `"0"` | Enable/disable all interstitial ads |
+| `native_ads` | `"1"` or `"0"` | Enable/disable all native ads |
+| `banner_ads` | `"1"` or `"0"` | Enable/disable all banner ads |
+| `app_open_ads` | `"1"` or `"0"` | Enable/disable all app open ads |
+| `rewarded_ads` | `"1"` or `"0"` | Enable/disable all rewarded ads |
+| `interstitial_interval` | Number / String (ms) | Interstitial cooldown interval (e.g. `40000`) |
 
 ### ⏳ Interstitial Ad Cooldown
 

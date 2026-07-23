@@ -32,6 +32,7 @@ class StarterAppOpenAdHelper(
     private var currentActivity: Activity? = null
     
     private var appOpenAdUnitId: String? = null
+    private var appOpenAdVarName: String = "APP_OPEN"
     private val excludedActivities = mutableSetOf<Class<out Activity>>()
 
     /** Exclude specific activities from showing the app open ad on resume */
@@ -49,18 +50,24 @@ class StarterAppOpenAdHelper(
         ProcessLifecycleOwner.get().lifecycle.addObserver(this)
     }
 
-    /** Set the App Open Ad Unit ID. If not set, app open ads will not load. */
-    fun setAdUnitId(adUnitId: String) {
+    /** Set the App Open Ad Unit ID and optional Remote Config variable name. */
+    @JvmOverloads
+    fun setAdUnitId(adUnitId: String, adVarName: String = "APP_OPEN") {
         this.appOpenAdUnitId = adUnitId
+        this.appOpenAdVarName = adVarName
     }
 
     private fun isAdAvailable(): Boolean {
-        return appOpenAd != null && (System.currentTimeMillis() - loadTime < 4 * 60 * 60 * 1000)
+        if (appOpenAd != null && System.currentTimeMillis() - loadTime >= 4 * 60 * 60 * 1000) {
+            appOpenAd = null
+        }
+        return appOpenAd != null
     }
 
-    fun loadAppOpenAd() {
+    @JvmOverloads
+    fun loadAppOpenAd(adVarName: String = appOpenAdVarName) {
         val unitId = appOpenAdUnitId ?: return
-        if (isLoadingAd || isAdAvailable() || !networkMonitor.isCurrentlyOnline() || !configProvider.isGlobalAdsEnabled() || !configProvider.isAppOpenEnabled()) {
+        if (isLoadingAd || isAdAvailable() || !networkMonitor.isCurrentlyOnline() || !configProvider.isGlobalAdsEnabled() || !configProvider.isAppOpenEnabled() || !configProvider.isAdEnabled(adVarName)) {
             return
         }
 

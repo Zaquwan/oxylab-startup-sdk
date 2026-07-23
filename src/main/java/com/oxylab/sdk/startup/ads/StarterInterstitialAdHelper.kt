@@ -103,14 +103,23 @@ class StarterInterstitialAdHelper(
 
         if (isAdLoaded()) {
             if (showLoadingDialog) {
+                if (activity.isFinishing || activity.isDestroyed) {
+                    onAdDismissed?.invoke()
+                    return
+                }
+
                 val dialog = Dialog(activity, dialogStyleResId)
                 dialog.setContentView(dialogLayoutResId)
                 dialog.setCancelable(false)
 
-                try {
-                    dialog.show()
-                } catch (e: Exception) {
-                    Log.e(TAG, "Failed to show loading dialog: ${e.message}")
+                val showSuccess = runCatching {
+                    if (!activity.isFinishing && !activity.isDestroyed) {
+                        dialog.show()
+                        true
+                    } else false
+                }.getOrDefault(false)
+
+                if (!showSuccess) {
                     showAdInternal(finalBypass, onAdDismissed, null)
                     return
                 }
@@ -119,11 +128,9 @@ class StarterInterstitialAdHelper(
                     if (!activity.isFinishing && !activity.isDestroyed) {
                         showAdInternal(finalBypass, onAdDismissed, dialog)
                     } else {
-                        try {
-                            if (dialog.isShowing) {
-                                dialog.dismiss()
-                            }
-                        } catch (e: Exception) {}
+                        runCatching {
+                            if (dialog.isShowing) dialog.dismiss()
+                        }
                         onAdDismissed?.invoke()
                     }
                 }, 2000)

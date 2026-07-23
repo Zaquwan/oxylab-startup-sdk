@@ -89,6 +89,12 @@ abstract class OxylabBaseLanguageActivity : AppCompatActivity() {
             view.context.getDrawable(com.oxylab.sdk.startup.R.drawable.oxylab_default_card_bg)
     }
 
+    /** Optional Remote Config variable name for the initial language native ad. */
+    open fun getLanguageInitialAdVarName(): String = "lang_initial"
+
+    /** Optional Remote Config variable name for the selection refresh native ad. */
+    open fun getLanguageSelectAdVarName(): String = "lang_select"
+
     // ── Internal State ──
 
     private var selectedLanguageCode: String? = null
@@ -141,7 +147,7 @@ abstract class OxylabBaseLanguageActivity : AppCompatActivity() {
         if (adContainer != null) {
             val adPrefs = getSharedPreferences("oxylab_lang_ad", Context.MODE_PRIVATE)
             val isFirst = adPrefs.getBoolean("is_first_ad", true)
-            nativeAdHelper.loadNativeAdWithLayout01(getNativeAdUnitIdInitial(isFirst), adContainer, "LANG_INITIAL") {
+            nativeAdHelper.loadNativeAdWithLayout01(getNativeAdUnitIdInitial(isFirst), adContainer, getLanguageInitialAdVarName()) {
                 if (isFirst) adPrefs.edit().putBoolean("is_first_ad", false).apply()
             }
         }
@@ -172,11 +178,20 @@ abstract class OxylabBaseLanguageActivity : AppCompatActivity() {
             if (adContainer != null) {
                 val adPrefs = getSharedPreferences("oxylab_lang_ad", Context.MODE_PRIVATE)
                 val isFirstSelect = adPrefs.getBoolean("is_first_select", true)
-                nativeAdHelper.loadNativeAdWithLayout01(getNativeAdUnitIdSelection(isFirstSelect), adContainer, "LANG_SELECT") {
+                nativeAdHelper.loadNativeAdWithLayout01(getNativeAdUnitIdSelection(isFirstSelect), adContainer, getLanguageSelectAdVarName()) {
                     if (isFirstSelect) adPrefs.edit().putBoolean("is_first_select", false).apply()
                 }
             }
         }
+    }
+
+    override fun onDestroy() {
+        doneTimerJob?.cancel()
+        val adContainer = findViewById<ViewGroup>(getAdContainerId())
+        if (adContainer != null) {
+            nativeAdHelper.destroyAd(adContainer)
+        }
+        super.onDestroy()
     }
 
     // ── Internal Helpers ──

@@ -152,6 +152,15 @@ abstract class OxylabBaseOnboardingActivity : AppCompatActivity() {
     private lateinit var interstitialAdHelper: StarterInterstitialAdHelper
     private var preloadedFullScreenAd: NativeAd? = null
 
+    /** Optional Remote Config variable name for the onboarding full-screen native ad. */
+    open fun getOnboardingFullAdVarName(): String = "onboarding_full"
+
+    /** Optional Remote Config variable name for onboarding page native ads. */
+    open fun getOnboardingPageAdVarName(position: Int): String = "onboarding_page_$position"
+
+    /** Optional Remote Config variable name for the onboarding exit interstitial ad. */
+    open fun getOnboardingExitAdVarName(): String = "onboarding_exit"
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(getLayoutResId())
@@ -171,7 +180,7 @@ abstract class OxylabBaseOnboardingActivity : AppCompatActivity() {
             getLoadingDialogTheme(),
             com.oxylab.sdk.startup.R.layout.dialog_loading_ad
         )
-        interstitialAdHelper.loadAd(getInterstitialAdUnitId(), "ONBOARDING_EXIT")
+        interstitialAdHelper.loadAd(getInterstitialAdUnitId(), getOnboardingExitAdVarName())
 
         val onboardingViewPager = findViewById<ViewPager2>(getViewPagerId())
         onboardingPagerAdapter = InternalOnboardingAdapter()
@@ -188,7 +197,7 @@ abstract class OxylabBaseOnboardingActivity : AppCompatActivity() {
         val prefs = getSharedPreferences("oxylab_onboarding_ads", Context.MODE_PRIVATE)
         val isFirstTimeFullScreenAdLoaded = prefs.getBoolean("is_first_full", true)
         
-        nativeAdHelper.loadNativeAd(getNativeAdUnitIdFullScreen(isFirstTimeFullScreenAdLoaded), "ONBOARDING_FULL", onLoaded = { loadedAd ->
+        nativeAdHelper.loadNativeAd(getNativeAdUnitIdFullScreen(isFirstTimeFullScreenAdLoaded), getOnboardingFullAdVarName(), onLoaded = { loadedAd ->
             preloadedFullScreenAd = loadedAd
             isFullScreenAdReady = true
             if (isFirstTimeFullScreenAdLoaded) {
@@ -266,6 +275,18 @@ abstract class OxylabBaseOnboardingActivity : AppCompatActivity() {
         } else {
             textView.text = fullText
         }
+    }
+
+    override fun onDestroy() {
+        closeButtonDelayJob?.cancel()
+        val adContainer = findViewById<ViewGroup>(getAdContainerId())
+        if (adContainer != null) {
+            nativeAdHelper.destroyAd(adContainer)
+        }
+        preloadedFullScreenAd?.destroy()
+        preloadedFullScreenAd = null
+        nativeAdHelper.destroyAll()
+        super.onDestroy()
     }
 
 
@@ -350,7 +371,7 @@ abstract class OxylabBaseOnboardingActivity : AppCompatActivity() {
                     val adId = getNativeAdUnitIdPage(originalIndex, isFirstTimePage)
                     if (adId != null) {
                         nativeAdContainer.visibility = View.VISIBLE
-                        nativeAdHelper.loadNativeAdWithLayout01(adId, nativeAdContainer, "ONBOARDING_PAGE_$originalIndex") {
+                        nativeAdHelper.loadNativeAdWithLayout01(adId, nativeAdContainer, getOnboardingPageAdVarName(originalIndex)) {
                             if (isFirstTimePage) prefs.edit().putBoolean("is_first_page_$originalIndex", false).apply()
                         }
                     } else {

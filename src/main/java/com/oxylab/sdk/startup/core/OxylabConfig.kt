@@ -20,7 +20,8 @@ open class DefaultOxylabConfig(
     private val bannerAds: Boolean = true,
     private val appOpenAds: Boolean = true,
     private val rewardedAds: Boolean = true,
-    private val intervalMs: Long = 40_000L
+    private val intervalMs: Long = 40_000L,
+    private val debugLogging: Boolean = false
 ) : OxylabConfig {
     override fun isGlobalAdsEnabled() = globalAds
     override fun isInterstitialEnabled() = interstitialAds
@@ -30,4 +31,5 @@ open class DefaultOxylabConfig(
     override fun isRewardedEnabled() = rewardedAds
     override fun getInterstitialInterval() = intervalMs
     override fun isAdEnabled(adVarName: String) = true
+    override fun isDebugLoggingEnabled() = debugLogging
 }

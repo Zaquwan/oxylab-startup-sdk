@@ -28,8 +28,9 @@ class StarterRewardedAdHelper(
         fun onRewardEarned()
     }
 
-    fun loadRewardedAd(adUnitID: String) {
-        if (!networkMonitor.isCurrentlyOnline() || !configProvider.isGlobalAdsEnabled() || !configProvider.isRewardedEnabled()) {
+    @JvmOverloads
+    fun loadRewardedAd(adUnitID: String, adVarName: String = "REWARDED") {
+        if (!networkMonitor.isCurrentlyOnline() || !configProvider.isGlobalAdsEnabled() || !configProvider.isRewardedEnabled() || !configProvider.isAdEnabled(adVarName)) {
             return
         }
         if (rewardedAd != null || isRewardedLoading) {
@@ -46,22 +47,34 @@ class StarterRewardedAdHelper(
                 override fun onAdLoaded(ad: RewardedAd) {
                     rewardedAd = ad
                     isRewardedLoading = false
-                    Log.d(TAG, "Rewarded ad loaded successfully.")
+                    Log.d(TAG, "Rewarded ad loaded successfully ($adVarName).")
                 }
 
                 override fun onAdFailedToLoad(error: LoadAdError) {
                     rewardedAd = null
                     isRewardedLoading = false
-                    Log.e(TAG, "Rewarded ad failed to load: ${error.message}")
+                    Log.e(TAG, "Rewarded ad failed to load ($adVarName): ${error.message}")
                 }
             }
         )
     }
 
-    fun showRewardedAd(activity: Activity, adUnitID: String, listener: AdRewardListener?) {
+    @JvmOverloads
+    fun showRewardedAd(
+        activity: Activity, 
+        adUnitID: String, 
+        listener: AdRewardListener?, 
+        adVarName: String = "REWARDED",
+        notReadyMessage: String? = "Ad not ready, try again"
+    ) {
+        if (!configProvider.isAdEnabled(adVarName) || !configProvider.isRewardedEnabled()) {
+            return
+        }
         if (rewardedAd == null) {
-            Toast.makeText(activity, "Ad not ready, try again", Toast.LENGTH_SHORT).show()
-            loadRewardedAd(adUnitID)
+            if (!notReadyMessage.isNullOrEmpty()) {
+                Toast.makeText(activity, notReadyMessage, Toast.LENGTH_SHORT).show()
+            }
+            loadRewardedAd(adUnitID, adVarName)
             return
         }
 
@@ -69,12 +82,12 @@ class StarterRewardedAdHelper(
             override fun onAdDismissedFullScreenContent() {
                 listener?.onRewardEarned()
                 rewardedAd = null
-                loadRewardedAd(adUnitID)
+                loadRewardedAd(adUnitID, adVarName)
             }
 
             override fun onAdFailedToShowFullScreenContent(adError: AdError) {
                 rewardedAd = null
-                loadRewardedAd(adUnitID)
+                loadRewardedAd(adUnitID, adVarName)
             }
         }
 

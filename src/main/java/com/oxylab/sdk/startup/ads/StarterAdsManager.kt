@@ -22,6 +22,10 @@ class StarterAdsManager(private val configProvider: AdConfigProvider) {
             lastInterstitialTime.set(System.currentTimeMillis())
         }
 
+        fun resetLastInterstitialTimeForTesting() {
+            lastInterstitialTime.set(0L)
+        }
+
         fun isInterstitialCooldownElapsed(intervalMs: Long): Boolean {
             return (System.currentTimeMillis() - lastInterstitialTime.get()) >= intervalMs
         }
@@ -49,7 +53,7 @@ class StarterAdsManager(private val configProvider: AdConfigProvider) {
         }
         try {
             Log.d(TAG, "Initializing Ad SDK...")
-            MobileAds.initialize(context) { status ->
+            MobileAds.initialize(context.applicationContext) { status ->
                 isSdkInitialized = true
                 Log.d(TAG, "Ad SDK initialized: ${status.adapterStatusMap}")
             }

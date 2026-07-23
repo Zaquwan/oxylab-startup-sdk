@@ -42,9 +42,10 @@ dependencies {
     // Google AdMob
     implementation("com.google.android.gms:play-services-ads:23.0.0")
     
-    // Firebase Auth
+    // Firebase Auth & Remote Config
     implementation(platform("com.google.firebase:firebase-bom:32.7.4"))
     implementation("com.google.firebase:firebase-auth-ktx")
+    implementation("com.google.firebase:firebase-config-ktx")
     
     // Shimmer
     implementation("com.facebook.shimmer:shimmer:0.5.0")
@@ -55,13 +56,16 @@ dependencies {
     
     // Lottie
     implementation("com.airbnb.android:lottie:6.7.1")
+    
+    // Testing
+    testImplementation("junit:junit:4.13.2")
 }
 
 // ── JitPack distribution metadata ──────────────────────────────────────────
 // JitPack calls :bundleReleaseAar directly — no maven-publish plugin needed.
 // group and version are all JitPack requires at the root level.
 group = "com.github.Zaquwan"
-version = "1.2.6"
+version = "1.2.7"
 
 kotlin {
     jvmToolchain(17)

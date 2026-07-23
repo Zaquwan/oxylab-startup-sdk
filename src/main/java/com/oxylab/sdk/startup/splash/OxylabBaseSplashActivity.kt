@@ -240,7 +240,7 @@ abstract class OxylabBaseSplashActivity : AppCompatActivity() {
                 when (status) {
                     AuthStatus.Authenticated -> hideOverlay()
                     AuthStatus.NoInternet -> showNoInternet("No Internet", "Please check connection")
-                    is AuthStatus.Error -> showError("Something went wrong", status.message)
+                    is AuthStatus.Error -> showError("Something went wrong", "Please check your network connection and try again.")
                     AuthStatus.Loading -> showLoading("Loading...")
                 }
             }
@@ -298,16 +298,20 @@ abstract class OxylabBaseSplashActivity : AppCompatActivity() {
         }
     }
 
+    /** Optional variable name for Remote Config enable/disable checking of the splash ad. */
+    open fun getSplashAdVarName(): String = "splash_ad"
+
     private fun loadSplashAd(adContainer: FrameLayout?) {
         if (adContainer == null) return
+        val adVarName = getSplashAdVarName()
         when (getSplashAdType()) {
             SplashAdType.NATIVE -> {
-                nativeAdHelper.loadNativeAdWithLayout04(getNativeAdUnitId(), adContainer, "NATIVE_SPLASH")
+                nativeAdHelper.loadNativeAdWithLayout04(getNativeAdUnitId(), adContainer, adVarName)
             }
             SplashAdType.BANNER -> {
                 val bannerId = getBannerAdUnitId()
                 if (bannerId.isNotEmpty()) {
-                    bannerAdHelper.showBanner(this, adContainer, bannerId)
+                    bannerAdHelper.showBanner(this, adContainer, bannerId, adVarName)
                 }
             }
             SplashAdType.NONE -> {
@@ -325,6 +329,15 @@ abstract class OxylabBaseSplashActivity : AppCompatActivity() {
             overridePendingTransition(com.oxylab.sdk.startup.R.anim.fade_in, com.oxylab.sdk.startup.R.anim.fade_out)
             finish()
         }
+    }
+
+    override fun onDestroy() {
+        val adContainer = findViewById<ViewGroup>(getAdContainerId())
+        if (adContainer != null) {
+            nativeAdHelper.destroyAd(adContainer)
+            (adContainer as? FrameLayout)?.let { bannerAdHelper.destroyBanner(it) }
+        }
+        super.onDestroy()
     }
 
     // ── UI Helpers ──

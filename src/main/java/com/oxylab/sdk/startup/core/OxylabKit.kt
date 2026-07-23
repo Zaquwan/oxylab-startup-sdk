@@ -28,7 +28,11 @@ object OxylabKit {
         
     var nativeAdLayoutConfig: com.oxylab.sdk.startup.ads.NativeAdLayoutConfig = com.oxylab.sdk.startup.ads.NativeAdLayoutConfig()
         
-    private var isInitialized = false
+    @Volatile
+    private var initialized = false
+
+    val isInitialized: Boolean
+        get() = initialized
 
     /**
      * Initializes the SDK.
@@ -38,12 +42,13 @@ object OxylabKit {
      * @param layoutConfig Custom layout configuration for native ads.
      */
     @JvmOverloads
+    @Synchronized
     fun initialize(
         context: Application, 
         sdkConfig: OxylabConfig = DefaultOxylabConfig(),
         layoutConfig: com.oxylab.sdk.startup.ads.NativeAdLayoutConfig = com.oxylab.sdk.startup.ads.NativeAdLayoutConfig()
     ) {
-        if (isInitialized) return
+        if (initialized) return
         
         config = sdkConfig
         nativeAdLayoutConfig = layoutConfig
@@ -55,6 +60,6 @@ object OxylabKit {
         rewardedAdHelper = com.oxylab.sdk.startup.ads.StarterRewardedAdHelper(context, config, networkMonitor)
         bannerAdHelper = com.oxylab.sdk.startup.ads.StarterBannerAdHelper(config, networkMonitor)
         
-        isInitialized = true
+        initialized = true
     }
 }

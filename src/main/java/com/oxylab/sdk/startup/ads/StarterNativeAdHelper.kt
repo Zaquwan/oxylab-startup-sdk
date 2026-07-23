@@ -42,13 +42,31 @@ class StarterNativeAdHelper(
     }
 
     private lateinit var adLoader: AdLoader
+    private val activeNativeAds = java.util.concurrent.ConcurrentHashMap<ViewGroup, NativeAd>()
+
+    /** Destroys the NativeAd associated with the given container and clears all child views. */
+    fun destroyAd(adContainer: ViewGroup) {
+        activeNativeAds.remove(adContainer)?.destroy()
+        adContainer.removeAllViews()
+    }
+
+    /** Destroys all active NativeAd instances managed by this helper. */
+    fun destroyAll() {
+        activeNativeAds.values.forEach { it.destroy() }
+        activeNativeAds.clear()
+    }
 
     private fun showShimmer(adContainer: ViewGroup, shimmerLayoutId: Int): View {
+        val existingShimmer = adContainer.findViewById<ShimmerFrameLayout>(layoutConfig.shimmerContainerId)
+        if (existingShimmer != null && adContainer.childCount == 1) {
+            existingShimmer.startShimmer()
+            return adContainer.getChildAt(0)
+        }
         val shimmerView = LayoutInflater.from(context)
             .inflate(shimmerLayoutId, adContainer, false)
         adContainer.removeAllViews()
         adContainer.addView(shimmerView)
-        shimmerView.findViewById<ShimmerFrameLayout>(layoutConfig.shimmerContainerId).startShimmer()
+        shimmerView.findViewById<ShimmerFrameLayout>(layoutConfig.shimmerContainerId)?.startShimmer()
         return shimmerView
     }
 
@@ -236,20 +254,20 @@ class StarterNativeAdHelper(
         onLoaded: (() -> Unit)? = null, onFailed: (() -> Unit)? = null
     ) {
         if (!networkMonitor.isCurrentlyOnline()) {
-            adContainer.removeAllViews()
+            destroyAd(adContainer)
             adsManager.hideAdContainer(adContainer)
             onFailed?.invoke()
             return
         }
         if (!configProvider.isAdEnabled(adVarName)) {
             Log.d(TAG, "$adVarName load SKIPPED: disabled by specific flag")
-            adContainer.removeAllViews()
+            destroyAd(adContainer)
             adsManager.hideAdContainer(adContainer)
             onFailed?.invoke()
             return
         }
         if (!adsManager.prepareAdContainer(adContainer, StarterAdsManager.AdType.NATIVE)) {
-            adContainer.removeAllViews()
+            destroyAd(adContainer)
             onFailed?.invoke()
             return
         }
@@ -260,7 +278,8 @@ class StarterNativeAdHelper(
                 val adView = LayoutInflater.from(context)
                     .inflate(nativeLayoutId, adContainer, false) as NativeAdView
                 populateFn(nativeAd, adView)
-                adContainer.removeAllViews()
+                destroyAd(adContainer)
+                activeNativeAds[adContainer] = nativeAd
                 adContainer.addView(adView)
                 onLoaded?.invoke()
             }
@@ -268,7 +287,7 @@ class StarterNativeAdHelper(
                 override fun onAdFailedToLoad(error: LoadAdError) {
                     super.onAdFailedToLoad(error)
                     Log.e(TAG, "$adVarName Failed: ${error.message} (Code: ${error.code}) | ID: $adUnitID")
-                    adContainer.removeAllViews()
+                    destroyAd(adContainer)
                     adsManager.hideAdContainer(adContainer)
                     onFailed?.invoke()
                 }
