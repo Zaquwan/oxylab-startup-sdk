@@ -5,7 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [1.2.6] - 2024-07-23 (Today)
+## [1.2.7] - 2026-07-23 (Today)
+### Added
+- Feature: Global centralized thread-safe interstitial ad cooldown.
+- Feature: Added `isInterstitialCooldownBypassed` to `AdConfigProvider` and `bypassCooldown` flag to `StarterInterstitialAdHelper.showAd()` for per-placement cooldown bypass.
+- Updated README.md with instructions for configuring interstitial cooldown bypass.
+
+## [1.2.6] - 2024-07-23
 ### Added
 - Feature: Added Banner Ad support for the splash screen (`SplashAdType.BANNER`).
 - Updated README.md with instructions for Splash Screen banner ads.

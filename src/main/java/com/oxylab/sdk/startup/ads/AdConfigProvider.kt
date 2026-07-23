@@ -22,4 +22,7 @@ interface AdConfigProvider {
     fun isAdEnabled(adVarName: String): Boolean
     /** Interval in ms between two interstitial ads. */
     fun getInterstitialInterval(): Long
+
+    /** Whether to bypass the global cooldown for a specific ad placement. */
+    fun isInterstitialCooldownBypassed(adVarName: String): Boolean = false
 }

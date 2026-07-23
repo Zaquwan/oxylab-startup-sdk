@@ -68,12 +68,30 @@ class MyApplication : Application() {
                 override fun isNativeEnabled()       = remoteConfig.getBoolean("native_enabled")
                 override fun isBannerEnabled()       = remoteConfig.getBoolean("banner_enabled")
                 override fun getInterstitialInterval() = remoteConfig.getLong("interstitial_interval_ms")
+                
+                // Optional: Bypass the cooldown for specific placements
+                override fun isInterstitialCooldownBypassed(adVarName: String): Boolean {
+                    return adVarName == "URGENT_PROMO" || remoteConfig.getBoolean("bypass_cooldown_$adVarName")
+                }
             }
         )
         */
     }
 }
 ```
+
+### ⏳ Interstitial Ad Cooldown
+
+By default, interstitial ads respect the global interval defined by `getInterstitialInterval()`. The SDK enforces this centrally and thread-safely across all placements.
+
+If you need a specific placement to ignore this cooldown (e.g., an ad shown on exit), you can bypass it dynamically in your config:
+
+```kotlin
+override fun isInterstitialCooldownBypassed(adVarName: String): Boolean {
+    return adVarName == "INTER_EXIT"
+}
+```
+When bypassed, the ad will show immediately and **will not** reset the global cooldown timer.
 
 ### 🚫 Excluding Activities from App Resume Ads (App Open Ads)
 

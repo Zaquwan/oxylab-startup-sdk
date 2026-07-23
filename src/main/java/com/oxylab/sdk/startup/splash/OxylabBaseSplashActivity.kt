@@ -319,7 +319,7 @@ abstract class OxylabBaseSplashActivity : AppCompatActivity() {
     private fun proceedToApp() {
         if (isProceeding) return
         isProceeding = true
-        interstitialAdHelper.showAd(ignoreInterval = true) {
+        interstitialAdHelper.showAd(bypassCooldown = true) {
             startActivity(Intent(this, getNextActivityClass()))
             @Suppress("DEPRECATION")
             overridePendingTransition(com.oxylab.sdk.startup.R.anim.fade_in, com.oxylab.sdk.startup.R.anim.fade_out)

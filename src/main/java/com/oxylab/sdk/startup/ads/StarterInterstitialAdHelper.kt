@@ -77,7 +77,7 @@ class StarterInterstitialAdHelper(
     }
 
     @JvmOverloads
-    fun showAd(ignoreInterval: Boolean = false, showLoadingDialog: Boolean = true, onAdDismissed: (() -> Unit)? = null) {
+    fun showAd(bypassCooldown: Boolean = false, showLoadingDialog: Boolean = true, onAdDismissed: (() -> Unit)? = null) {
         if (!configProvider.isAdEnabled(currentAdVarName)) {
             onAdDismissed?.invoke()
             return
@@ -92,10 +92,10 @@ class StarterInterstitialAdHelper(
             return
         }
 
-        if (!ignoreInterval) {
-            val lastTime = timingProvider.getLastAdTime(activity)
-            val currentTime = System.currentTimeMillis()
-            if (currentTime - lastTime < configProvider.getInterstitialInterval()) {
+        val finalBypass = bypassCooldown || configProvider.isInterstitialCooldownBypassed(currentAdVarName)
+
+        if (!finalBypass) {
+            if (!StarterAdsManager.isInterstitialCooldownElapsed(configProvider.getInterstitialInterval())) {
                 onAdDismissed?.invoke()
                 return
             }
@@ -111,13 +111,13 @@ class StarterInterstitialAdHelper(
                     dialog.show()
                 } catch (e: Exception) {
                     Log.e(TAG, "Failed to show loading dialog: ${e.message}")
-                    showAdInternal(ignoreInterval, onAdDismissed, null)
+                    showAdInternal(finalBypass, onAdDismissed, null)
                     return
                 }
 
                 Handler(Looper.getMainLooper()).postDelayed({
                     if (!activity.isFinishing && !activity.isDestroyed) {
-                        showAdInternal(ignoreInterval, onAdDismissed, dialog)
+                        showAdInternal(finalBypass, onAdDismissed, dialog)
                     } else {
                         try {
                             if (dialog.isShowing) {
@@ -128,14 +128,14 @@ class StarterInterstitialAdHelper(
                     }
                 }, 2000)
             } else {
-                showAdInternal(ignoreInterval, onAdDismissed, null)
+                showAdInternal(finalBypass, onAdDismissed, null)
             }
         } else {
             onAdDismissed?.invoke()
         }
     }
 
-    private fun showAdInternal(ignoreInterval: Boolean, onAdDismissed: (() -> Unit)?, dialog: Dialog?) {
+    private fun showAdInternal(bypassCooldown: Boolean, onAdDismissed: (() -> Unit)?, dialog: Dialog?) {
         if (activity.isFinishing || activity.isDestroyed) {
             try {
                 if (dialog?.isShowing == true) dialog.dismiss()
@@ -166,8 +166,8 @@ class StarterInterstitialAdHelper(
                     } catch (e: Exception) {
                         Log.e(TAG, "Error dismissing dialog on dismiss: ${e.message}")
                     }
-                    if (!ignoreInterval) {
-                        timingProvider.updateLastAdTime(activity)
+                    if (!bypassCooldown) {
+                        StarterAdsManager.updateLastInterstitialTime()
                     }
                     onAdDismissed?.invoke()
                 }

@@ -15,6 +15,16 @@ class StarterAdsManager(private val configProvider: AdConfigProvider) {
 
     companion object {
         private const val TAG = "StarterAdsManager"
+
+        private val lastInterstitialTime = java.util.concurrent.atomic.AtomicLong(0L)
+
+        fun updateLastInterstitialTime() {
+            lastInterstitialTime.set(System.currentTimeMillis())
+        }
+
+        fun isInterstitialCooldownElapsed(intervalMs: Long): Boolean {
+            return (System.currentTimeMillis() - lastInterstitialTime.get()) >= intervalMs
+        }
     }
 
     enum class AdType { BANNER, INTERSTITIAL, NATIVE }
