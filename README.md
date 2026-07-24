@@ -78,13 +78,11 @@ class MyApplication : Application() {
 
 ### 🎛️ Firebase Remote Config Dashboard Setup
 
-Enable or disable **every ad unit** in your app via Firebase Console using the exact placement variable name (`adVarName`) as the parameter key:
+Enable, disable, or remotely change Ad Unit IDs for **every ad unit** in your app via Firebase Console using the exact placement variable name (`adVarName`) as the parameter key:
 
 | Remote Config Key | Expected Value | Behavior |
 |---|---|---|
-| `"1"` | String | **Ad Unit Enabled** |
-| `"0"` | String | **Ad Unit Disabled** |
-| `adVarName` (e.g. `inter_splash`, `native_home`, `banner_main`) | `"1"` or `"0"` | Enable/disable specific ad unit placement |
+| `adVarName` (e.g. `inter_splash`, `native_home`, `banner_main`) | `"1"` or `"0"` or `ca-app-pub-XXX/YYY` | Enable/disable specific ad unit placement, or override the Ad Unit ID |
 | `global_ads` | `"1"` or `"0"` | Master global switch for all ads |
 | `interstitial_ads` | `"1"` or `"0"` | Enable/disable all interstitial ads |
 | `native_ads` | `"1"` or `"0"` | Enable/disable all native ads |
@@ -92,6 +90,66 @@ Enable or disable **every ad unit** in your app via Firebase Console using the e
 | `app_open_ads` | `"1"` or `"0"` | Enable/disable all app open ads |
 | `rewarded_ads` | `"1"` or `"0"` | Enable/disable all rewarded ads |
 | `interstitial_interval` | Number / String (ms) | Interstitial cooldown interval (e.g. `40000`) |
+
+#### 📢 Dynamic Ad Control Behavior (Release Builds)
+
+1. **Set value to `"1"` (or `"true"`)**:
+   * **Behavior**: The ad is **enabled** and uses the **default production Ad Unit ID** hardcoded inside your application's ad configuration.
+   * **Code Flow**: The app checks if the value starts with `"ca-app-pub-"`. Since `"1"` does not, it falls back to the default production ID, while the SDK enables the placement.
+
+2. **Set value to `"0"` (or `"false"`)**:
+   * **Behavior**: The ad is **disabled** and **will not be shown** at all.
+   * **Code Flow**: The SDK calls `isAdEnabled(placementKey)` before showing. Since it reads `"0"`, it blocks ad loading/showing entirely.
+
+3. **Set value to a new Ad Unit ID (e.g. `"ca-app-pub-4398046346463366/9977782191"`)**:
+   * **Behavior**: The ad is **enabled** and uses the **new Ad Unit ID** fetched dynamically from the Firebase Remote Config dashboard.
+   * **Code Flow**: The app detects that the value starts with `"ca-app-pub-"` and overrides the default ID with this new value dynamically.
+
+> [!NOTE]
+> **Debug Mode (during testing):**
+> The app will **always** use Google's official test ad unit IDs (`ca-app-pub-3940256099942544/...`) to protect your developer account from accidental invalid clicks, regardless of the values set on the Firebase dashboard.
+
+
+### 🔀 Custom Firebase Variable Names Across Different Projects
+
+Different projects implementing this SDK do **NOT** need to use identical parameter key names in their Firebase Console. The SDK provides two flexible ways to map custom key names:
+
+#### Method 1: Global Key Alias Mapping (`keyMapping`)
+Pass a custom `keyMapping: Map<String, String>` when initializing `FirebaseOxylabConfig`:
+
+```kotlin
+val customKeyMapping = mapOf(
+    FirebaseOxylabConfig.KEY_GLOBAL_ADS to "my_app_global_ads",
+    FirebaseOxylabConfig.KEY_INTERSTITIAL_ADS to "show_interstitials",
+    FirebaseOxylabConfig.KEY_INTERSTITIAL_INTERVAL to "ad_cooldown_time_ms"
+)
+
+val firebaseConfig = FirebaseOxylabConfig(
+    remoteConfig = FirebaseRemoteConfig.getInstance(),
+    defaultEnabled = true,
+    defaultIntervalMs = 40_000L,
+    keyMapping = customKeyMapping
+)
+```
+
+#### Method 2: Activity-Level Variable Overrides (`adVarName`)
+Every Base Activity allows overriding placement variable names to match whatever key is defined in Firebase Console:
+
+```kotlin
+class SplashActivity : OxylabBaseSplashActivity() {
+    override fun getSplashAdVarName() = "my_custom_splash_key"
+}
+
+class LanguageActivity : OxylabBaseLanguageActivity() {
+    override fun getLanguageInitialAdVarName() = "my_custom_lang_initial"
+    override fun getLanguageSelectAdVarName()  = "my_custom_lang_select"
+}
+
+class OnboardingActivity : OxylabBaseOnboardingActivity() {
+    override fun getOnboardingFullAdVarName() = "my_custom_ob_full"
+    override fun getOnboardingExitAdVarName() = "my_custom_ob_exit"
+}
+```
 
 ### ⏳ Interstitial Ad Cooldown
 
